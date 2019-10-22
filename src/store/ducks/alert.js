@@ -5,8 +5,6 @@ export const {Types, Creators} = createActions({
   removeAlert: [''],
 });
 
-console.log(alert);
-
 const INITIAL_STATE = {
   show: '',
   title: '',
