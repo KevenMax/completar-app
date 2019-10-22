@@ -1,6 +1,9 @@
+// Activity Style
 import styled from 'styled-components/native';
 import {TextInputMask} from 'react-native-masked-text';
 import ModalDropdown from 'react-native-modal-dropdown';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 export const ScrollView = styled.ScrollView`
   background: #ffffff;
@@ -36,12 +39,28 @@ export const SelectInput = styled(ModalDropdown).attrs({
   showsVerticalScrollIndicator: true,
 })``;
 
+export const ContainerTextSelect = styled.View`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
 export const TextSelectShowInput = styled.Text.attrs({
   numberOfLines: 1,
 })`
   font-size: 14px;
   color: #303030;
   font-family: 'Comfortaa-Regular';
+  max-width: 270;
+`;
+
+export const ArrowInput = styled(Icon).attrs({
+  name: 'angle-down',
+  size: 15,
+  color: '#303030',
+})`
+  align-self: flex-end;
+  text-align: right;
 `;
 
 export const TextSelectInput = styled.Text`
@@ -120,3 +139,12 @@ export const TextSubmit = styled.Text`
   color: #fff;
   padding-top: 6px;
 `;
+
+export const Alert = styled(AwesomeAlert).attrs({
+  titleStyle: {fontFamily: 'Comfortaa-Bold', fontSize: 17},
+  messageStyle: {
+    fontFamily: 'Comfortaa-Regular',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+})``;

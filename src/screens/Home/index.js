@@ -12,10 +12,42 @@ import {AnimatedCircularProgress} from 'react-native-circular-progress';
 import Header from '../../components/Header';
 import Menu from '../../components/Menu';
 import ChartMain from '../../components/ChartMain';
+import AwesomeAlert from 'react-native-awesome-alerts';
+
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {Creators as AlertActions} from '../../store/ducks/alert';
 
 class Home extends Component {
   state = {
     percentual: 50,
+    showAlert: false,
+    messageAlert: '',
+    titleAlert: '',
+  };
+
+  componentDidMount() {
+    this.alert();
+  }
+
+  alert = () => {
+    if (this.props.alert.show) {
+      const {show, title, message} = this.props.alert;
+      this.setState({
+        showAlert: show,
+        titleAlert: title,
+        messageAlert: message,
+      });
+    }
+  };
+
+  handleConfirmAlert = () => {
+    this.setState({
+      showAlert: false,
+      titleAlert: '',
+      messageAlert: '',
+    });
+    this.props.removeAlert();
   };
 
   render() {
@@ -48,8 +80,31 @@ class Home extends Component {
           </ContainerItems>
         </ScrollView>
         <Menu props={this.props} />
+        <AwesomeAlert
+          show={this.state.showAlert}
+          showProgress={false}
+          title={this.state.titleAlert}
+          message={this.state.messageAlert}
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={true}
+          confirmText="OK"
+          confirmButtonColor="#b275f4"
+          onConfirmPressed={() => this.handleConfirmAlert()}
+        />
       </>
     );
   }
 }
-export default Home;
+
+const mapStateToProps = state => ({
+  alert: state.alert,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(AlertActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Home);

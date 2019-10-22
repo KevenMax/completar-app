@@ -13,12 +13,19 @@ import {
   TextSubmit,
   TextSelectInput,
   TextSelectShowInput,
+  ContainerTextSelect,
+  ArrowInput,
+  Alert,
 } from './styles';
 import Header from '../../components/Header';
 import Menu from '../../components/Menu';
 import DocumentPicker from 'react-native-document-picker';
 
-export default class Activity extends Component {
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {Creators as AlertActions} from '../../store/ducks/alert';
+
+class Activity extends Component {
   state = {
     categoria: null,
     fillCategoria: 'Selecione uma opção',
@@ -56,6 +63,9 @@ export default class Activity extends Component {
       {id: 3, nome: 'Atividade 3'},
       {id: 4, nome: 'Atividade 4'},
     ],
+    showAlert: false,
+    messageAlert: '',
+    titleAlert: '',
   };
 
   handleUploadFile = async () => {
@@ -63,7 +73,7 @@ export default class Activity extends Component {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
       });
-      this.setState({fillAnexo: res.name});
+      this.setState({fillAnexo: res.name, anexo: res});
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         // User cancelled the picker, exit any dialogs or menus and move on
@@ -85,6 +95,38 @@ export default class Activity extends Component {
     this.setState({fillAtividade: value.nome, atividade: value.id});
   };
 
+  handleSubmit = () => {
+    const {
+      categoria,
+      atividade,
+      descricao,
+      quantidadeHoras,
+      anexo,
+    } = this.state;
+    console.log(this.state);
+    if (!categoria || !atividade || !descricao || !quantidadeHoras || !anexo) {
+      this.setState({
+        showAlert: true,
+        messageAlert:
+          'Para realizar o cadastro preencha todo os campos do formulário',
+        titleAlert: 'Preencha todos os campos',
+      });
+    } else {
+      const data = new FormData();
+      data.append('categoria_id', categoria);
+      data.append('atividade_id', atividade);
+      data.append('descricao', descricao);
+      data.append('quantidade_horas', quantidadeHoras);
+      data.append('anexo', anexo);
+      this.props.addAlert(
+        true,
+        'Cadastro realizado',
+        'A atividade foi cadastrada com sucesso!',
+      );
+      this.props.navigation.navigate('Home');
+    }
+  };
+
   render() {
     return (
       <>
@@ -97,9 +139,12 @@ export default class Activity extends Component {
                 options={this.state.listCategorias}
                 renderRow={this.renderRowSelect.bind(this)}
                 onSelect={(index, value) => this.handleCategoria(index, value)}>
-                <TextSelectShowInput>
-                  {this.state.fillCategoria}
-                </TextSelectShowInput>
+                <ContainerTextSelect>
+                  <TextSelectShowInput>
+                    {this.state.fillCategoria}
+                  </TextSelectShowInput>
+                  <ArrowInput />
+                </ContainerTextSelect>
               </SelectInput>
             </ContainerSelect>
 
@@ -109,14 +154,19 @@ export default class Activity extends Component {
                 options={this.state.listAtividades}
                 renderRow={this.renderRowSelect.bind(this)}
                 onSelect={(index, value) => this.handleAtividade(index, value)}>
-                <TextSelectShowInput>
-                  {this.state.fillAtividade}
-                </TextSelectShowInput>
+                <ContainerTextSelect>
+                  <TextSelectShowInput>
+                    {this.state.fillAtividade}
+                  </TextSelectShowInput>
+                  <ArrowInput />
+                </ContainerTextSelect>
               </SelectInput>
             </ContainerSelect>
 
             <Label>Descrição *</Label>
-            <TextInput />
+            <TextInput
+              onChangeText={text => this.setState({descricao: text})}
+            />
 
             <Label>Quantidade de Horas *</Label>
             <NumberInput
@@ -130,12 +180,39 @@ export default class Activity extends Component {
             </FileInput>
 
             <Submit>
-              <TextSubmit>SALVAR</TextSubmit>
+              <TextSubmit onPress={this.handleSubmit}>SALVAR</TextSubmit>
             </Submit>
           </Form>
         </ScrollView>
         <Menu props={this.props} />
+        <Alert
+          show={this.state.showAlert}
+          showProgress={false}
+          title={this.state.titleAlert}
+          message={this.state.messageAlert}
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={true}
+          confirmText="OK, entendi"
+          confirmButtonColor="#b275f4"
+          onConfirmPressed={() => {
+            this.setState({showAlert: false});
+          }}
+          // showCancelButton={true}
+          // cancelText="No, cancel"
+          // onCancelPressed={() => this.setState({showAlert: false})}
+        />
       </>
     );
   }
 }
+const mapStateToProps = state => ({
+  alert: state.alert,
+});
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(AlertActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(Activity);
