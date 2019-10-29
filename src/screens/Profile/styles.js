@@ -1,4 +1,6 @@
 import styled from 'styled-components/native';
+import AwesomeAlert from 'react-native-awesome-alerts';
+
 export const ScrollView = styled.ScrollView`
   background: #ffffff;
   margin-bottom: 70px;
@@ -128,3 +130,12 @@ export const TextLogout = styled.Text`
   font-size: 16px;
   color: #b275f4;
 `;
+
+export const Alert = styled(AwesomeAlert).attrs({
+  titleStyle: {fontFamily: 'Comfortaa-Bold', fontSize: 17},
+  messageStyle: {
+    fontFamily: 'Comfortaa-Regular',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+})``;

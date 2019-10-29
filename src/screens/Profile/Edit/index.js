@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {Picker} from 'react-native';
 
 import {
   ScrollView,
@@ -9,26 +8,44 @@ import {
   TextInput,
   ContainerSelect,
   SelectInput,
+  ContainerTextSelect,
+  TextSelectShowInput,
+  ArrowInput,
   FileInput,
   TextFileInput,
   Submit,
   TextSubmit,
+  NumberContactInput,
+  TextSelectInput,
+  Alert,
 } from './styles';
 
 import Header from '../../../components/Header';
 import Menu from '../../../components/Menu';
 import DocumentPicker from 'react-native-document-picker';
 
-export default class Edit extends Component {
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {Creators as AlertActions} from '../../../store/ducks/alert';
+
+class Edit extends Component {
   state = {
-    matricula: '',
+    name: 'Keven Max Noronha de Lima',
+    nickname: 'Kevinho',
+    matriculation: '403258',
+    contact: '(85) 98779-9928',
     fillImage: 'Nenhuma imagem selecionada',
-    curso: null,
-    listCursos: [
+    image: null,
+    course: 2,
+    fillCourse: 'Selecione uma opção',
+    listCourses: [
       {id: 1, nome: 'Engenharia Mecanica'},
       {id: 2, nome: 'Engenharia de Software'},
       {id: 3, nome: 'Ciências da Computação'},
     ],
+    showAlert: false,
+    titleAlert: '',
+    messageAlert: '',
   };
 
   handlePicture = async () => {
@@ -36,7 +53,7 @@ export default class Edit extends Component {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.images],
       });
-      this.setState({fillFile: res.name});
+      this.setState({fillImage: res.name, image: res});
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         // User cancelled the picker, exit any dialogs or menus and move on
@@ -46,8 +63,42 @@ export default class Edit extends Component {
     }
   };
 
-  setMatricula = matricula => {
-    this.setState({matricula: matricula.replace(/[^\d]+/g, '')});
+  setMatriculation = matriculation => {
+    this.setState({matriculation: matriculation.replace(/[^\d]+/g, '')});
+  };
+
+  handleCourse = (index, value) => {
+    this.setState({fillCourse: value.nome, course: value.id});
+  };
+
+  renderRowSelect = (rowData, rowID, highlighted) => {
+    return <TextSelectInput>{rowData.nome}</TextSelectInput>;
+  };
+
+  handleSubmit = () => {
+    const {name, nickname, matriculation, contact, image, course} = this.state;
+    if (!name || !nickname || !matriculation || !contact || !image || !course) {
+      this.setState({
+        showAlert: true,
+        messageAlert:
+          'Para realizar o cadastro preencha todo os campos do formulário',
+        titleAlert: 'Preencha todos os campos',
+      });
+    } else {
+      const data = new FormData();
+      data.append('nome', name);
+      data.append('nickname', nickname);
+      data.append('matricula', matriculation);
+      data.append('contato', contact);
+      data.append('imagem', image);
+      data.append('curso_id', course);
+      this.props.addAlert(
+        true,
+        'Perfil atualizado',
+        'Seu perfil foi atualizado com sucesso!',
+      );
+      this.props.navigation.navigate('Profile');
+    }
   };
 
   render() {
@@ -57,36 +108,44 @@ export default class Edit extends Component {
           <Header name="Editar Perfil" />
           <Form>
             <Label>Nome Completo *</Label>
-            <TextInput />
+            <TextInput
+              value={this.state.name}
+              onChangeText={text => this.setState({name: text})}
+            />
 
             <Label>Como gostaria de ser chamado? *</Label>
-            <TextInput />
+            <TextInput
+              value={this.state.nickname}
+              onChangeText={text => this.setState({nickname: text})}
+            />
 
             <Label>Matrícula *</Label>
             <NumberInput
               maxLength={6}
-              onChangeText={text => this.setMatricula(text)}
-              value={this.state.matricula}
+              onChangeText={text => this.setMatriculation(text)}
+              value={this.state.matriculation}
             />
 
             <Label>Curso *</Label>
             <ContainerSelect>
               <SelectInput
-                selectedValue={this.state.curso}
-                onValueChange={itemValue => this.setState({curso: itemValue})}>
-                <Picker.Item label="Selecione uma opção" value="" />
-                {this.state.listCursos.map(categoria => (
-                  <Picker.Item
-                    label={categoria.nome}
-                    value={categoria.id}
-                    key={categoria.id}
-                  />
-                ))}
+                options={this.state.listCourses}
+                renderRow={this.renderRowSelect.bind(this)}
+                onSelect={(index, value) => this.handleCourse(index, value)}>
+                <ContainerTextSelect>
+                  <TextSelectShowInput>
+                    {this.state.fillCourse}
+                  </TextSelectShowInput>
+                  <ArrowInput />
+                </ContainerTextSelect>
               </SelectInput>
             </ContainerSelect>
 
             <Label>Contato *</Label>
-            <NumberInput />
+            <NumberContactInput
+              value={this.state.contact}
+              onChangeText={text => this.setState({contact: text})}
+            />
 
             <Label>Foto </Label>
             <FileInput onPress={() => this.handlePicture()}>
@@ -94,12 +153,43 @@ export default class Edit extends Component {
             </FileInput>
 
             <Submit>
-              <TextSubmit>SALVAR</TextSubmit>
+              <TextSubmit onPress={() => this.handleSubmit()}>
+                SALVAR
+              </TextSubmit>
             </Submit>
           </Form>
         </ScrollView>
         <Menu props={this.props} />
+        <Alert
+          show={this.state.showAlert}
+          showProgress={false}
+          title={this.state.titleAlert}
+          message={this.state.messageAlert}
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={true}
+          confirmText="OK, entendi"
+          confirmButtonColor="#b275f4"
+          onConfirmPressed={() => {
+            this.setState({showAlert: false});
+          }}
+          // showCancelButton={true}
+          // cancelText="No, cancel"
+          // onCancelPressed={() => this.setState({showAlert: false})}
+        />
       </>
     );
   }
 }
+
+const mapStateToProps = state => ({
+  alert: state.alert,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(AlertActions, dispatch);
+
+export default connect(
+  null,
+  mapDispatchToProps,
+)(Edit);
