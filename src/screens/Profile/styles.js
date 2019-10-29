@@ -16,6 +16,7 @@ export const Avatar = styled.Image`
   margin-left: 90px;
   width: 120;
   height: 120;
+  border-radius: 60px;
 `;
 
 export const ButttonEdit = styled.TouchableOpacity.attrs({
