@@ -9,11 +9,11 @@ import Edit from './screens/Profile/Edit';
 
 export default createAppContainer(
   createSwitchNavigator({
+    Home,
     Activity,
     Edit,
     Category,
     Profile,
     SignIn,
-    Home,
   }),
 );
