@@ -24,88 +24,81 @@ import ModalDropdown from 'react-native-modal-dropdown';
 export default class Category extends Component {
   state = {
     percentual: 80,
+    category: {
+      name: 'Categoria 1',
+      description: 'Atividades artísticas culturais e esportivas',
+      amountHours: 48.5,
+    },
+    activities: [
+      {
+        id: '1',
+        name: 'Evento A',
+        description: 'Participação de Congresso Nacional',
+        hours: 322.62,
+      },
+      {
+        id: '2',
+        name:
+          'Participação de palestra sobre otimização de algoritmos com complexidade exponencial',
+        description: 'UFC do campus de Russas',
+        hours: 3.4,
+      },
+      {
+        id: '3',
+        name:
+          'Evento/apresentação/torneio de grupo de teatro, de dança,coral, literário, musical ou esportivo',
+        description: 'Empresa Júnior',
+        hours: 55.4,
+      },
+    ],
   };
 
-  handleOption = (index, option) => {
-    alert(`A opção ${option} foi selecionada, com o indíce ${index}`);
+  handleOption = (id, option) => {
+    alert(`A opção ${option} foi selecionada, para o id ${id}`);
   };
 
   render() {
     return (
       <>
         <ScrollView>
-          <Header name="Categoria 1" />
+          <Header name={this.state.category.name} />
           <ChartMain percentual={this.state.percentual} props={this.props} />
-          <TextDescribe>
-            Atividades artísticas culturais e esportivas
-          </TextDescribe>
-          <TextTime>(48.0h)</TextTime>
+          <TextDescribe>{this.state.category.description}</TextDescribe>
+          <TextTime>({this.state.category.amountHours}h)</TextTime>
           <ContainerItems>
-            <Item>
-              <TextTimeItem>55.4h</TextTimeItem>
-              <ContentText>
-                <TextHeaderItem>
-                  Evento/apresentação/torneio de grupo de teatro, de dança,
-                  coral, literário, musical ou esportivo
-                </TextHeaderItem>
-                <TextDescribeItem ellipsizeMode="middle">
-                  Empresa Júnior com Gilberto Júnior
-                </TextDescribeItem>
-              </ContentText>
+            {this.state.activities.map(activity => (
+              <Item key={activity.id}>
+                <TextTimeItem>{activity.hours}h</TextTimeItem>
+                <ContentText>
+                  <TextHeaderItem>{activity.name}</TextHeaderItem>
+                  <TextDescribeItem ellipsizeMode="middle">
+                    {activity.description}
+                  </TextDescribeItem>
+                </ContentText>
 
-              <OptionItem>
-                <ModalDropdown
-                  options={['Download do anexo', 'Excluir']}
-                  dropdownTextStyle={{
-                    fontSize: 13,
-                    fontFamily: 'Comfortaa-Regular',
-                    color: '#838383',
-                  }}
-                  onSelect={(index, option) => this.handleOption(index, option)}
-                  showsVerticalScrollIndicator={false}
-                  dropdownStyle={{
-                    width: 160,
-                    height: 85,
-                    padding: 0,
-                    margin: 0,
-                  }}>
-                  <Icon name="ellipsis-v" size={30} color="#b275f4" />
-                </ModalDropdown>
-              </OptionItem>
-            </Item>
-
-            <Item>
-              <TextTimeItem>55.4h</TextTimeItem>
-              <ContentText>
-                <TextHeaderItem>
-                  Evento/apresentação/torneio de grupo de teatro, de dança,
-                  coral, literário, musical ou esportivo
-                </TextHeaderItem>
-                <TextDescribeItem ellipsizeMode="middle">
-                  Empresa Júnior com Gilberto Júnior
-                </TextDescribeItem>
-              </ContentText>
-
-              <OptionItem>
-                <ModalDropdown
-                  options={['Download do anexo', 'Excluir']}
-                  dropdownTextStyle={{
-                    fontSize: 13,
-                    fontFamily: 'Comfortaa-Regular',
-                    color: '#838383',
-                  }}
-                  onSelect={(index, option) => this.handleOption(index, option)}
-                  showsVerticalScrollIndicator={false}
-                  dropdownStyle={{
-                    width: 160,
-                    height: 85,
-                    padding: 0,
-                    margin: 0,
-                  }}>
-                  <Icon name="ellipsis-v" size={30} color="#b275f4" />
-                </ModalDropdown>
-              </OptionItem>
-            </Item>
+                <OptionItem>
+                  <ModalDropdown
+                    options={['Download do anexo', 'Excluir']}
+                    dropdownTextStyle={{
+                      fontSize: 13,
+                      fontFamily: 'Comfortaa-Regular',
+                      color: '#838383',
+                    }}
+                    onSelect={(index, option) =>
+                      this.handleOption(activity.id, option)
+                    }
+                    showsVerticalScrollIndicator={false}
+                    dropdownStyle={{
+                      width: 160,
+                      height: 85,
+                      padding: 0,
+                      margin: 0,
+                    }}>
+                    <Icon name="ellipsis-v" size={30} color="#b275f4" />
+                  </ModalDropdown>
+                </OptionItem>
+              </Item>
+            ))}
           </ContainerItems>
         </ScrollView>
         <Menu props={this.props} />

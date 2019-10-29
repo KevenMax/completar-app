@@ -37,14 +37,16 @@ export const Item = styled.View`
 `;
 
 export const TextTimeItem = styled.Text`
-  font-size: 18px;
+  font-size: 15px;
   font-family: 'Comfortaa-Regular';
   font-weight: 600;
   opacity: 0.8;
   color: #b275f4;
+  width: 58;
+  text-align: center;
 `;
 export const ContentText = styled.View`
-  margin-left: 13px;
+  margin-left: 8px;
   width: 170;
 `;
 
