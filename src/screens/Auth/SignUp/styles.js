@@ -1,6 +1,7 @@
 import styled from 'styled-components/native';
-import logo from '../../assets/images/logo-azul-completa.png';
+import logo from '../../../assets/images/logo-azul-completa.png';
 import {Platform} from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 export const Container = styled.KeyboardAvoidingView.attrs({
   behavior: 'padding',
@@ -13,13 +14,23 @@ export const Container = styled.KeyboardAvoidingView.attrs({
 export const Logo = styled.Image.attrs({
   source: logo,
 })`
-  margin-top: 60px;
   width: 250;
   height: 250;
 `;
+
+export const Title = styled.Text`
+  font-family: 'Comfortaa-Regular';
+  color: #9479f2;
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 40px;
+  margin-top: -20px;
+`;
+
 export const Form = styled.View`
   margin-top: 5px;
 `;
+
 export const InputEmail = styled.TextInput.attrs({
   placeholder: 'E-mail',
   autoFocus: false,
@@ -38,7 +49,6 @@ export const InputEmail = styled.TextInput.attrs({
   font-family: 'Comfortaa-Regular';
 `;
 export const InputPassword = styled.TextInput.attrs({
-  placeholder: 'Senha',
   autoFocus: false,
   secureTextEntry: true,
 })`
@@ -87,3 +97,12 @@ export const LinkText = styled.Text`
 export const Bold = styled.Text`
   font-weight: 700;
 `;
+
+export const Alert = styled(AwesomeAlert).attrs({
+  titleStyle: {fontFamily: 'Comfortaa-Bold', fontSize: 17},
+  messageStyle: {
+    fontFamily: 'Comfortaa-Regular',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+})``;

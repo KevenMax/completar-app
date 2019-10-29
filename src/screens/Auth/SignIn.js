@@ -8,6 +8,7 @@ import {
   Button,
   ButtonText,
   Link,
+  LinkText,
   Bold,
 } from './styles';
 
@@ -16,11 +17,15 @@ import {ScrollView} from 'react-native';
 class SignIn extends Component {
   state = {
     email: '',
-    senha: '',
+    password: '',
   };
 
   handleLogin = () => {
     this.props.navigation.navigate('Home');
+  };
+
+  handleSignUp = () => {
+    this.props.navigation.navigate('SignUp');
   };
 
   render() {
@@ -31,13 +36,15 @@ class SignIn extends Component {
           <Form>
             <InputEmail onChangeText={text => this.setState({email: text})} />
             <InputPassword
-              onChangeText={text => this.setState({senha: text})}
+              onChangeText={text => this.setState({password: text})}
             />
             <Button onPress={this.handleLogin}>
               <ButtonText>ENTRAR</ButtonText>
             </Button>
-            <Link>
-              Ainda não tem conta? <Bold>Cadastre-se!</Bold>
+            <Link onPress={this.handleSignUp}>
+              <LinkText>
+                Ainda não tem conta? <Bold>Cadastre-se!</Bold>
+              </LinkText>
             </Link>
           </Form>
         </Container>
