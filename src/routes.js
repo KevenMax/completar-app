@@ -7,11 +7,13 @@ import Category from './screens/Home/Category';
 import Activity from './screens/Activity';
 import Profile from './screens/Profile';
 import Edit from './screens/Profile/Edit';
+import Create from './screens/Profile/Create';
 
 export default createAppContainer(
   createSwitchNavigator({
     SignIn,
     SignUp,
+    Create,
     Home,
     Activity,
     Edit,

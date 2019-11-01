@@ -45,7 +45,7 @@ class SignUp extends Component {
         messageAlert: 'Senha e confirmação de senha devem ser iguais!',
       });
     } else {
-      this.props.navigation.navigate('Home');
+      this.props.navigation.navigate('Create');
     }
   };
 

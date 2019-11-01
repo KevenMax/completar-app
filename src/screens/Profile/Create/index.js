@@ -21,27 +21,26 @@ import {
 } from './styles';
 
 import Header from '../../../components/Header';
-import Menu from '../../../components/Menu';
 import DocumentPicker from 'react-native-document-picker';
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Creators as AlertActions} from '../../../store/ducks/alert';
 
-class Edit extends Component {
+class Create extends Component {
   state = {
-    name: 'Keven Max Noronha de Lima',
-    nickname: 'Kevinho',
-    matriculation: '403258',
-    contact: '(85) 98779-9928',
+    name: '',
+    nickname: '',
+    matriculation: '',
+    contact: '',
     fillImage: 'Nenhuma imagem selecionada',
     image: null,
-    course: 2,
+    course: null,
     fillCourse: 'Selecione uma opção',
     listCourses: [
-      {id: 1, nome: 'Engenharia Mecanica'},
-      {id: 2, nome: 'Engenharia de Software'},
-      {id: 3, nome: 'Ciências da Computação'},
+      {id: 1, nome: 'Engenharia Mecânica - UFC Russas'},
+      {id: 2, nome: 'Engenharia de Software - UFC Russas'},
+      {id: 3, nome: 'Ciências da Computação - UFC Russas'},
     ],
     showAlert: false,
     titleAlert: '',
@@ -94,10 +93,10 @@ class Edit extends Component {
       data.append('curso_id', course);
       this.props.addAlert(
         true,
-        'Perfil atualizado',
-        'Seu perfil foi atualizado com sucesso!',
+        'Perfil criado',
+        'Seu perfil foi criado com sucesso!',
       );
-      this.props.navigation.navigate('Profile');
+      this.props.navigation.navigate('Home');
     }
   };
 
@@ -105,7 +104,7 @@ class Edit extends Component {
     return (
       <>
         <ScrollView>
-          <Header name="Editar Perfil" />
+          <Header name="Completar Perfil" />
           <Form>
             <Label>Nome Completo *</Label>
             <TextInput
@@ -159,7 +158,6 @@ class Edit extends Component {
             </Submit>
           </Form>
         </ScrollView>
-        <Menu props={this.props} />
         <Alert
           show={this.state.showAlert}
           showProgress={false}
@@ -173,9 +171,6 @@ class Edit extends Component {
           onConfirmPressed={() => {
             this.setState({showAlert: false});
           }}
-          // showCancelButton={true}
-          // cancelText="No, cancel"
-          // onCancelPressed={() => this.setState({showAlert: false})}
         />
       </>
     );
@@ -192,4 +187,4 @@ const mapDispatchToProps = dispatch =>
 export default connect(
   null,
   mapDispatchToProps,
-)(Edit);
+)(Create);
