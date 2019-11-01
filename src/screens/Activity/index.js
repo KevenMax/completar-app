@@ -103,7 +103,7 @@ class Activity extends Component {
       quantidadeHoras,
       anexo,
     } = this.state;
-    if (!categoria || !atividade || !descricao || !quantidadeHoras || !anexo) {
+    if (!categoria || !atividade || !descricao || !quantidadeHoras) {
       this.setState({
         showAlert: true,
         messageAlert:

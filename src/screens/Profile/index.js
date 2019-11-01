@@ -28,6 +28,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Creators as PersonActions} from '../../store/ducks/person';
 import {Creators as AlertActions} from '../../store/ducks/alert';
+import AsyncStorage from '@react-native-community/async-storage';
 
 class Profile extends Component {
   state = {
@@ -78,6 +79,11 @@ class Profile extends Component {
     this.props.navigation.navigate('Edit');
   };
 
+  handleLogout = () => {
+    AsyncStorage.clear();
+    this.props.navigation.navigate('SignIn');
+  };
+
   render() {
     const avatarImage = this.state.person.avatar
       ? {uri: this.state.person.avatar}
@@ -126,8 +132,7 @@ class Profile extends Component {
               <Bold>{this.state.person.totalHours} horas</Bold> necessárias
             </TimePending>
           </InfoTime>
-          <ButtonLogout
-            onPress={() => this.props.navigation.navigate('SignIn')}>
+          <ButtonLogout onPress={() => this.handleLogout()}>
             <TextLogout>
               SAIR <Icon name="sign-out" size={20} color="#b275f4" />
             </TextLogout>

@@ -1,6 +1,7 @@
 import styled from 'styled-components/native';
 import logo from '../../assets/images/logo-azul-completa.png';
 import {Platform} from 'react-native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 export const Container = styled.KeyboardAvoidingView.attrs({
   behavior: 'padding',
@@ -87,3 +88,12 @@ export const LinkText = styled.Text`
 export const Bold = styled.Text`
   font-weight: 700;
 `;
+
+export const Alert = styled(AwesomeAlert).attrs({
+  titleStyle: {fontFamily: 'Comfortaa-Bold', fontSize: 16},
+  messageStyle: {
+    fontFamily: 'Comfortaa-Regular',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+})``;
