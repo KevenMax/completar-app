@@ -14,6 +14,11 @@ import {
 } from './styles';
 
 import {ScrollView} from 'react-native';
+import api from '../../../services/api';
+
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {Creators as UserActions} from '../../../store/ducks/user';
 
 class SignUp extends Component {
   state = {
@@ -29,7 +34,7 @@ class SignUp extends Component {
     this.props.navigation.navigate('SignIn');
   };
 
-  handleRegister = () => {
+  handleRegister = async () => {
     const {email, password, passwordConfirmation} = this.state;
     if (!email || !password || !passwordConfirmation) {
       this.setState({
@@ -45,7 +50,28 @@ class SignUp extends Component {
         messageAlert: 'Senha e confirmação de senha devem ser iguais!',
       });
     } else {
-      this.props.navigation.navigate('Create');
+      try {
+        const request = await api.post('/auth', {
+          email,
+          password,
+          password_confirmation: passwordConfirmation,
+        });
+        const response = request.data.data;
+        this.props.setUser(response.id);
+        this.props.navigation.navigate('Create');
+      } catch (err) {
+        this.setState({
+          showAlert: true,
+          titleAlert: 'Ops...',
+          messageAlert:
+            err.response &&
+            err.response.data &&
+            err.response.data.errors &&
+            err.response.data.errors.full_messages
+              ? err.response.data.errors.full_messages[0]
+              : 'Verifique sua conexão com a internet',
+        });
+      }
     }
   };
 
@@ -96,4 +122,10 @@ class SignUp extends Component {
   }
 }
 
-export default SignUp;
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(UserActions, dispatch);
+
+export default connect(
+  null,
+  mapDispatchToProps,
+)(SignUp);

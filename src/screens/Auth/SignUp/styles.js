@@ -99,7 +99,7 @@ export const Bold = styled.Text`
 `;
 
 export const Alert = styled(AwesomeAlert).attrs({
-  titleStyle: {fontFamily: 'Comfortaa-Bold', fontSize: 17},
+  titleStyle: {fontFamily: 'Comfortaa-Bold', fontSize: 16},
   messageStyle: {
     fontFamily: 'Comfortaa-Regular',
     fontSize: 14,

@@ -42,9 +42,8 @@ class SignIn extends Component {
     if (!email || !password) {
       this.setState({
         showAlert: true,
-        titleAlert: 'Preencha todos os campos',
-        messageAlert:
-          'Para realizar o cadastro preencha todo os campos do formulário',
+        titleAlert: 'Ops...',
+        messageAlert: 'Preencha e-mail e senha para continuar',
       });
     } else {
       try {
