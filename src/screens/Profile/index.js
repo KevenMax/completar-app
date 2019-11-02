@@ -26,7 +26,7 @@ import avatar from '../../assets/images/avatar.png';
 
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {Creators as PersonActions} from '../../store/ducks/person';
+import {Creators as UserActions} from '../../store/ducks/user';
 import {Creators as AlertActions} from '../../store/ducks/alert';
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -75,7 +75,7 @@ class Profile extends Component {
   };
 
   handleEdit = id => {
-    this.props.personActions.setPerson(id);
+    this.props.userActions.setUser(id);
     this.props.navigation.navigate('Edit');
   };
 
@@ -162,7 +162,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => {
   return {
-    personActions: bindActionCreators(PersonActions, dispatch),
+    userActions: bindActionCreators(UserActions, dispatch),
     alertActions: bindActionCreators(AlertActions, dispatch),
   };
 };

@@ -2,10 +2,10 @@ import {combineReducers} from 'redux';
 
 import alert from './alert';
 import category from './category';
-import person from './person';
+import user from './user';
 
 export default combineReducers({
   alert,
   category,
-  person,
+  user,
 });

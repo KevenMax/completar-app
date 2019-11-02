@@ -1,23 +1,23 @@
 import {createActions, createReducer} from 'reduxsauce';
 
 export const {Types, Creators} = createActions({
-  setPerson: ['id'],
-  removePerson: [''],
+  setUser: ['id'],
+  removeUser: [''],
 });
 
 const INITIAL_STATE = {
-  person_id: '',
+  user_id: '',
 };
 
 const set = (state = INITIAL_STATE, action) => ({
-  person_id: action.id,
+  user_id: action.id,
 });
 
 const remove = (state = INITIAL_STATE, action) => ({
-  person_id: '',
+  user_id: '',
 });
 
 export default createReducer(INITIAL_STATE, {
-  [Types.SET_PERSON]: set,
-  [Types.REMOVE_PERSON]: remove,
+  [Types.SET_USER]: set,
+  [Types.REMOVE_USER]: remove,
 });
