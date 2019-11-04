@@ -16,6 +16,10 @@ import api from '../../services/api';
 import {ScrollView} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {Creators as UserActions} from '../../store/ducks/user';
+
 class SignIn extends Component {
   state = {
     email: '',
@@ -24,18 +28,6 @@ class SignIn extends Component {
     titleAlert: '',
     messageAlert: '',
   };
-
-  // async componentDidMount() {
-  // const user = ;
-  // if (await AsyncStorage.getItem('@userId')) {
-  //   this.props.navigation.navigate('Home');
-  // }
-  // AsyncStorage.getItem('@userId').then(user => {
-  //   if (user) {
-  //     this.props.navigation.navigate('Home');
-  //   }
-  // });
-  // }
 
   handleLogin = async () => {
     const {email, password} = this.state;
@@ -47,18 +39,22 @@ class SignIn extends Component {
       });
     } else {
       try {
-        const request = await api.post('/auth/sign_in', {email, password});
-        const response = request.data.data;
-        await AsyncStorage.setItem('@userId', `${response.id}`);
+        const request = await api.post('/auth', {email, password});
+        const user = request.data;
+        const token = request.headers.token;
+
+        this.props.setUser(user);
+        await AsyncStorage.setItem('token', `${token}`);
+
         this.props.navigation.navigate('Home');
       } catch (err) {
-        if (err.response && err.response.data && err.response.data.errors) {
+        if (err.response && err.response.data && err.response.data.error) {
           this.setState({
             showAlert: true,
-            titleAlert: 'Ops... Ocorreu algum problema',
+            titleAlert: 'Ops...',
             messageAlert:
-              err.response && err.response.data && err.response.data.errors
-                ? err.response.data.errors[0]
+              err.response && err.response.data && err.response.data.error
+                ? err.response.data.error
                 : '',
           });
         }
@@ -110,4 +106,14 @@ class SignIn extends Component {
     );
   }
 }
-export default SignIn;
+
+const mapStateToProps = state => ({
+  user: state.user,
+});
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(UserActions, dispatch);
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(SignIn);
