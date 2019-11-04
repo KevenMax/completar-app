@@ -26,6 +26,9 @@ import DocumentPicker from 'react-native-document-picker';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Creators as AlertActions} from '../../../store/ducks/alert';
+import {Creators as UserActions} from '../../../store/ducks/user';
+
+import api from '../../../services/api';
 
 class Create extends Component {
   state = {
@@ -37,14 +40,27 @@ class Create extends Component {
     image: null,
     course: null,
     fillCourse: 'Selecione uma opção',
-    listCourses: [
-      {id: 1, nome: 'Engenharia Mecânica - UFC Russas'},
-      {id: 2, nome: 'Engenharia de Software - UFC Russas'},
-      {id: 3, nome: 'Ciências da Computação - UFC Russas'},
-    ],
+    listCourses: [],
     showAlert: false,
     titleAlert: '',
     messageAlert: '',
+  };
+
+  componentDidMount() {
+    this.loadCourse();
+  }
+
+  loadCourse = async () => {
+    try {
+      const request = await api.get('/cursos');
+      this.setState({listCourses: request.data.data});
+    } catch (err) {
+      this.setState({
+        showAlert: true,
+        messageAlert: 'Ops...',
+        titleAlert: 'Ocorreu algum problema ao carregar os cursos',
+      });
+    }
   };
 
   handlePicture = async () => {
@@ -57,7 +73,11 @@ class Create extends Component {
       if (DocumentPicker.isCancel(err)) {
         // User cancelled the picker, exit any dialogs or menus and move on
       } else {
-        throw err;
+        this.setState({
+          showAlert: true,
+          messageAlert: 'Ops...',
+          titleAlert: 'Ocorreu algum problema ao selecionar a foto',
+        });
       }
     }
   };
@@ -66,15 +86,15 @@ class Create extends Component {
     this.setState({matriculation: matriculation.replace(/[^\d]+/g, '')});
   };
 
-  handleCourse = (index, value) => {
-    this.setState({fillCourse: value.nome, course: value.id});
+  handleCourse = value => {
+    this.setState({fillCourse: value.attributes.nome, course: value.id});
   };
 
   renderRowSelect = (rowData, rowID, highlighted) => {
-    return <TextSelectInput>{rowData.nome}</TextSelectInput>;
+    return <TextSelectInput>{rowData.attributes.nome}</TextSelectInput>;
   };
 
-  handleSubmit = () => {
+  handleSubmit = async () => {
     const {name, nickname, matriculation, contact, image, course} = this.state;
     if (!name || !nickname || !matriculation || !contact || !course) {
       this.setState({
@@ -86,17 +106,32 @@ class Create extends Component {
     } else {
       const data = new FormData();
       data.append('nome', name);
-      data.append('nickname', nickname);
+      data.append('apelido', nickname);
       data.append('matricula', matriculation);
       data.append('contato', contact);
-      data.append('imagem', image);
+      data.append('foto', image);
       data.append('curso_id', course);
-      this.props.addAlert(
-        true,
-        'Perfil criado',
-        'Seu perfil foi criado com sucesso!',
-      );
-      this.props.navigation.navigate('Home');
+      try {
+        const request = await api.put('usuarios/update', data);
+        const user = request.data.data;
+
+        this.props.userActions.setUser(user);
+        this.props.alertActions.addAlert(
+          true,
+          'Perfil criado',
+          'Seu perfil foi criado com sucesso!',
+        );
+        this.props.navigation.navigate('Home');
+      } catch (err) {
+        this.setState({
+          showAlert: true,
+          titleAlert: 'Ops...',
+          messageAlert:
+            err.response && err.response.data
+              ? err.response.data[0]
+              : 'Verifique sua conexão com a internet',
+        });
+      }
     }
   };
 
@@ -130,7 +165,7 @@ class Create extends Component {
               <SelectInput
                 options={this.state.listCourses}
                 renderRow={this.renderRowSelect.bind(this)}
-                onSelect={(index, value) => this.handleCourse(index, value)}>
+                onSelect={(index, value) => this.handleCourse(value)}>
                 <ContainerTextSelect>
                   <TextSelectShowInput>
                     {this.state.fillCourse}
@@ -177,12 +212,14 @@ class Create extends Component {
   }
 }
 
-const mapStateToProps = state => ({
-  alert: state.alert,
-});
-
-const mapDispatchToProps = dispatch =>
-  bindActionCreators(AlertActions, dispatch);
+const mapDispatchToProps = dispatch => {
+  return {
+    alertActions: bindActionCreators(AlertActions, dispatch),
+    userActions: bindActionCreators(UserActions, dispatch),
+  };
+};
+// const mapDispatchToProps = dispatch =>
+//   bindActionCreators(AlertActions, dispatch);
 
 export default connect(
   null,
