@@ -19,6 +19,7 @@ import api from '../../../services/api';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Creators as UserActions} from '../../../store/ducks/user';
+import AsyncStorage from '@react-native-community/async-storage';
 
 class SignUp extends Component {
   state = {
@@ -51,24 +52,23 @@ class SignUp extends Component {
       });
     } else {
       try {
-        const request = await api.post('/auth', {
+        await api.post('/usuarios', {
           email,
           password,
           password_confirmation: passwordConfirmation,
         });
-        const response = request.data.data;
-        this.props.setUser(response.id);
+        const request = await api.post('/auth', {email, password});
+        const token = request.headers.token;
+
+        await AsyncStorage.setItem('token', `${token}`);
         this.props.navigation.navigate('Create');
       } catch (err) {
         this.setState({
           showAlert: true,
           titleAlert: 'Ops...',
           messageAlert:
-            err.response &&
-            err.response.data &&
-            err.response.data.errors &&
-            err.response.data.errors.full_messages
-              ? err.response.data.errors.full_messages[0]
+            err.response && err.response.data
+              ? err.response.data[0]
               : 'Verifique sua conexão com a internet',
         });
       }
