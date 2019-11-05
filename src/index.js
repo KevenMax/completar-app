@@ -12,7 +12,7 @@ export default class App extends React.Component {
   };
 
   async componentDidMount() {
-    const user = await AsyncStorage.getItem('@userId');
+    const user = await AsyncStorage.getItem('token');
     if (user) {
       this.setState({signed: user, signLoaded: true});
     } else {

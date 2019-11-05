@@ -18,7 +18,7 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Creators as AlertActions} from '../../store/ducks/alert';
 import {Creators as CategoryActions} from '../../store/ducks/category';
-
+import AsyncStorage from '@react-native-community/async-storage';
 class Home extends Component {
   state = {
     percentual: 50,
