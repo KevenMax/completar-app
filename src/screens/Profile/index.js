@@ -33,17 +33,15 @@ import AsyncStorage from '@react-native-community/async-storage';
 class Profile extends Component {
   state = {
     person: {
-      id: '1',
-      name: 'Keven Max Noronha de Lima',
-      nickname: 'Kevinho',
-      avatar:
-        'https://instagram.fjdo10-1.fna.fbcdn.net/vp/a7c70dbb22e9cf8577554ad951241c83/5E479490/t51.2885-15/e35/71713324_937268040005072_3515962860375946059_n.jpg?_nc_ht=instagram.fjdo10-1.fna.fbcdn.net&_nc_cat=108',
-      matriculation: '403258',
-      course: 'Engenharia de Software',
-      college: 'UFC - Russas',
-      contact: '(85) 98779-9928',
-      requiredHours: 130.2,
-      totalHours: 288.5,
+      name: this.props.user.data.attributes.nome,
+      nickname: this.props.user.data.attributes.apelido,
+      avatar: this.props.user.data.attributes.foto,
+      matriculation: this.props.user.data.attributes.matricula,
+      course: this.props.user.included[0].attributes.nome,
+      college: this.props.user.included[1].attributes.nome,
+      contact: this.props.user.data.attributes.contato,
+      requiredHours: this.props.user.data.attributes['horas-realizadas'],
+      totalHours: this.props.user.data.attributes['total-horas'],
     },
     showAlert: false,
     titleAlert: '',
@@ -75,7 +73,7 @@ class Profile extends Component {
   };
 
   handleEdit = id => {
-    this.props.userActions.setUser(id);
+    // this.props.userActions.setUser(id);
     this.props.navigation.navigate('Edit');
   };
 
@@ -88,6 +86,7 @@ class Profile extends Component {
     const avatarImage = this.state.person.avatar
       ? {uri: this.state.person.avatar}
       : avatar;
+    console.log(this.props.user);
     return (
       <>
         <ScrollView>
@@ -158,6 +157,7 @@ class Profile extends Component {
 
 const mapStateToProps = state => ({
   alert: state.alert,
+  user: state.user.user,
 });
 
 const mapDispatchToProps = dispatch => {

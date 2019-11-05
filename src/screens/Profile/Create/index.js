@@ -113,7 +113,7 @@ class Create extends Component {
       data.append('curso_id', course);
       try {
         const request = await api.put('usuarios/update', data);
-        const user = request.data.data;
+        const user = request.data;
 
         this.props.userActions.setUser(user);
         this.props.alertActions.addAlert(
