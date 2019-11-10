@@ -86,7 +86,6 @@ class Profile extends Component {
     const avatarImage = this.state.person.avatar
       ? {uri: this.state.person.avatar}
       : avatar;
-    console.log(this.props.user);
     return (
       <>
         <ScrollView>
