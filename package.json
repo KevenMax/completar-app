@@ -29,6 +29,7 @@
     "react-navigation": "^4.0.10",
     "react-redux": "^7.1.1",
     "redux": "^4.0.4",
+    "redux-persist": "^6.0.0",
     "reduxsauce": "^1.1.0",
     "styled-components": "^4.4.0"
   },

@@ -1,9 +1,10 @@
 import React from 'react';
 
-import {createRootNavigator, SignedOutRoutes, SignedInRoutes} from './routes';
+import {createRootNavigator} from './routes';
 import AsyncStorage from '@react-native-community/async-storage';
 import {Provider} from 'react-redux';
-import store from './store';
+import {PersistGate} from 'redux-persist/integration/react';
+import {store, persistor} from './store';
 
 export default class App extends React.Component {
   state = {
@@ -30,7 +31,9 @@ export default class App extends React.Component {
     const Layout = createRootNavigator(signed);
     return (
       <Provider store={store}>
-        <Layout />
+        <PersistGate loading={null} persistor={persistor}>
+          <Layout />
+        </PersistGate>
       </Provider>
     );
   }
