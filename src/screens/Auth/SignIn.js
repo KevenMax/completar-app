@@ -48,16 +48,14 @@ class SignIn extends Component {
 
         this.props.navigation.navigate('Home');
       } catch (err) {
-        if (err.response && err.response.data && err.response.data.error) {
-          this.setState({
-            showAlert: true,
-            titleAlert: 'Ops...',
-            messageAlert:
-              err.response && err.response.data && err.response.data.error
-                ? err.response.data.error
-                : '',
-          });
-        }
+        this.setState({
+          showAlert: true,
+          titleAlert: 'Ops...',
+          messageAlert:
+            err.response && err.response.data && err.response.data.error
+              ? err.response.data.error
+              : 'Verifique sua conexão com a internet',
+        });
       }
     }
   };
