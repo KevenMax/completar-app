@@ -33,15 +33,15 @@ import AsyncStorage from '@react-native-community/async-storage';
 class Profile extends Component {
   state = {
     person: {
-      name: this.props.user.data.attributes.nome,
-      nickname: this.props.user.data.attributes.apelido,
-      avatar: this.props.user.data.attributes.foto,
-      matriculation: this.props.user.data.attributes.matricula,
-      course: this.props.user.included[0].attributes.nome,
-      college: this.props.user.included[1].attributes.nome,
-      contact: this.props.user.data.attributes.contato,
-      requiredHours: this.props.user.data.attributes['horas-realizadas'],
-      totalHours: this.props.user.data.attributes['total-horas'],
+      name: '',
+      nickname: '',
+      avatar: '',
+      matriculation: '',
+      course: '',
+      college: '',
+      contact: '',
+      requiredHours: '',
+      totalHours: '',
     },
     showAlert: false,
     titleAlert: '',
@@ -50,7 +50,28 @@ class Profile extends Component {
 
   componentDidMount() {
     this.alert();
+    this.loadUser();
   }
+
+  loadUser = () => {
+    if (this.props.user.user !== null) {
+      this.setState({
+        person: {
+          name: this.props.user.user.data.attributes.nome,
+          nickname: this.props.user.user.data.attributes.apelido,
+          avatar: this.props.user.user.data.attributes.foto,
+          matriculation: this.props.user.user.data.attributes.matricula,
+          course: this.props.user.user.included[0].attributes.nome,
+          college: this.props.user.user.included[1].attributes.nome,
+          contact: this.props.user.user.data.attributes.contato,
+          requiredHours: this.props.user.user.data.attributes[
+            'horas-realizadas'
+          ],
+          totalHours: this.props.user.user.data.attributes['total-horas'],
+        },
+      });
+    }
+  };
 
   alert = () => {
     if (this.props.alert.show) {
@@ -101,33 +122,35 @@ class Profile extends Component {
               />
             </ButttonEdit>
           </ContainerHeader>
-          <Nickname>{this.state.person.nickname}</Nickname>
-          <Name>{this.state.person.name}</Name>
+          <Nickname>{this.state.person.nickname || ''}</Nickname>
+          <Name>{this.state.person.name || ''}</Name>
           <Info>
             <Item>
               <TextLabel>Matricula</TextLabel>
-              <TextValue>{this.state.person.matriculation}</TextValue>
+              <TextValue>{this.state.person.matriculation || ''}</TextValue>
             </Item>
             <Item>
               <TextLabel>Curso</TextLabel>
-              <TextValue>{this.state.person.course}</TextValue>
+              <TextValue>{this.state.person.course || ''}</TextValue>
             </Item>
             <Item>
               <TextLabel>Campus</TextLabel>
-              <TextValue>{this.state.person.college}</TextValue>
+              <TextValue>{this.state.person.college || ''}</TextValue>
             </Item>
             <Item>
               <TextLabel>Contato</TextLabel>
-              <TextValue>{this.state.person.contact}</TextValue>
+              <TextValue>{this.state.person.contact || ''}</TextValue>
             </Item>
           </Info>
           <InfoTime>
             <TimeDone>
-              <Bold>{this.state.person.requiredHours} horas</Bold> realizadas
+              <Bold>{this.state.person.requiredHours || ''} horas</Bold>{' '}
+              realizadas
             </TimeDone>
             <Line />
             <TimePending>
-              <Bold>{this.state.person.totalHours} horas</Bold> necessárias
+              <Bold>{this.state.person.totalHours || ''} horas</Bold>{' '}
+              necessárias
             </TimePending>
           </InfoTime>
           <ButtonLogout onPress={() => this.handleLogout()}>
@@ -156,7 +179,7 @@ class Profile extends Component {
 
 const mapStateToProps = state => ({
   alert: state.alert,
-  user: state.user.user,
+  user: state.user,
 });
 
 const mapDispatchToProps = dispatch => {
