@@ -178,8 +178,8 @@ class Activity extends Component {
               <TextFileInput>{this.state.fillAnexo}</TextFileInput>
             </FileInput>
 
-            <Submit>
-              <TextSubmit onPress={this.handleSubmit}>SALVAR</TextSubmit>
+            <Submit onPress={this.handleSubmit}>
+              <TextSubmit>SALVAR</TextSubmit>
             </Submit>
           </Form>
         </ScrollView>

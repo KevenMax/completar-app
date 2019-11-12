@@ -186,10 +186,8 @@ class Create extends Component {
               <TextFileInput>{this.state.fillImage}</TextFileInput>
             </FileInput>
 
-            <Submit>
-              <TextSubmit onPress={() => this.handleSubmit()}>
-                SALVAR
-              </TextSubmit>
+            <Submit onPress={() => this.handleSubmit()}>
+              <TextSubmit>SALVAR</TextSubmit>
             </Submit>
           </Form>
         </ScrollView>
