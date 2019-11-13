@@ -24,9 +24,12 @@ import DocumentPicker from 'react-native-document-picker';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Creators as AlertActions} from '../../store/ducks/alert';
+import {Creators as UserActions} from '../../store/ducks/user';
+import api from '../../services/api';
 
 class Activity extends Component {
   state = {
+    user_id: this.props.user.user.data.id,
     categoria: null,
     fillCategoria: 'Selecione uma opção',
     atividade: null,
@@ -35,38 +38,24 @@ class Activity extends Component {
     quantidadeHoras: '',
     anexo: null,
     fillAnexo: 'Nenhum arquivo selecionado',
-    listCategorias: [
-      {
-        id: 1,
-        nome:
-          'Essa é geralmente uma propriedade que é quase sempre definida como flex-wrap: wrap; Pois assim quando um dos flex itens atinge o limite do conteúdo, o último item passa para a coluna debaixo e assim por diante.',
-      },
-      {id: 2, nome: 'Categoria 2'},
-      {id: 3, nome: 'Categoria 3'},
-      {id: 4, nome: 'Categoria 4'},
-      {
-        id: 5,
-        nome:
-          'Essa é geralmente uma propriedade que é quase sempre definida como flex-wrap: wrap; Pois assim quando um dos flex itens atinge o limite do conteúdo, o último item passa para a coluna debaixo e assim por diante.',
-      },
-      {id: 6, nome: 'Categoria 2'},
-      {id: 7, nome: 'Categoria 3'},
-      {id: 8, nome: 'Categoria 4'},
-    ],
-    listAtividades: [
-      {
-        id: 1,
-        nome:
-          'Participação na diretoria de empresa júnior, como presidente e vice-presidente ou diretor',
-      },
-      {id: 2, nome: 'Atividade 2'},
-      {id: 3, nome: 'Atividade 3'},
-      {id: 4, nome: 'Atividade 4'},
-    ],
-    showAlert: false,
+    listCategorias: [],
+    listAtividades: [],
+    showAlert: true,
     messageAlert: '',
     titleAlert: '',
+    progressAlert: true,
+    buttonAlert: false,
   };
+
+  componentDidMount() {
+    this.loadCategory();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.categoria !== this.state.categoria) {
+      this.loadActivity();
+    }
+  }
 
   handleUploadFile = async () => {
     try {
@@ -88,20 +77,27 @@ class Activity extends Component {
   };
 
   handleCategoria = (index, value) => {
-    this.setState({fillCategoria: value.nome, categoria: value.id});
+    this.setState({
+      fillCategoria: value.nome,
+      categoria: value.id,
+      fillAtividade: 'Selecione uma opção',
+      atividade: null,
+    });
+    console.log(this.state);
   };
 
   handleAtividade = (index, value) => {
     this.setState({fillAtividade: value.nome, atividade: value.id});
   };
 
-  handleSubmit = () => {
+  handleSubmit = async () => {
     const {
       categoria,
       atividade,
       descricao,
       quantidadeHoras,
       anexo,
+      user_id,
     } = this.state;
     if (!categoria || !atividade || !descricao || !quantidadeHoras) {
       this.setState({
@@ -109,6 +105,8 @@ class Activity extends Component {
         messageAlert:
           'Para realizar o cadastro preencha todo os campos do formulário',
         titleAlert: 'Preencha todos os campos',
+        buttonAlert: true,
+        progressAlert: false,
       });
     } else {
       const data = new FormData();
@@ -116,13 +114,75 @@ class Activity extends Component {
       data.append('atividade_id', atividade);
       data.append('descricao', descricao);
       data.append('quantidade_horas', quantidadeHoras);
-      data.append('anexo', anexo);
-      this.props.addAlert(
-        true,
-        'Cadastro realizado',
-        'A atividade foi cadastrada com sucesso!',
-      );
-      this.props.navigation.navigate('Home');
+      data.append('usuario_id', user_id);
+      if (anexo !== null) {
+        data.append('anexo', anexo);
+      }
+      try {
+        const request = await api.post('/horas_complementares', data);
+        const response = request.data;
+        this.props.alertActions.addAlert(
+          true,
+          'Cadastro realizado',
+          'A atividade foi cadastrada com sucesso!',
+        );
+        this.props.userActions.setUser(response);
+        this.props.navigation.navigate('Home');
+      } catch (error) {
+        this.setState({
+          showAlert: true,
+          titleAlert: 'Ops...',
+          messageAlert:
+            error.response && error.response.data && error.response.data.error
+              ? error.response.data.error
+              : 'Ocorreu algum problema ao cadastrar os dados',
+          buttonAlert: true,
+          progressAlert: false,
+        });
+      }
+    }
+  };
+
+  loadCategory = async () => {
+    try {
+      const request = await api.get('/categorias');
+      const response = request.data;
+      this.setState({
+        listCategorias: response,
+        showAlert: false,
+        showProgress: false,
+      });
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert:
+          error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Ocorreu algum problema ao carregar os dados',
+      });
+    }
+  };
+
+  loadActivity = async () => {
+    const {categoria} = this.state;
+    try {
+      const request = await api.get(`/atividades?categoria_id=${categoria}`);
+      const response = request.data;
+      this.setState({
+        listAtividades: response,
+        showAlert: false,
+        showProgress: false,
+      });
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert:
+          error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Ocorreu algum problema ao carregar os dados',
+      });
     }
   };
 
@@ -186,12 +246,12 @@ class Activity extends Component {
         <Menu props={this.props} />
         <Alert
           show={this.state.showAlert}
-          showProgress={false}
+          showProgress={this.state.progressAlert}
           title={this.state.titleAlert}
           message={this.state.messageAlert}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={false}
-          showConfirmButton={true}
+          showConfirmButton={this.state.buttonAlert}
           confirmText="OK, entendi"
           confirmButtonColor="#b275f4"
           onConfirmPressed={() => {
@@ -207,11 +267,14 @@ class Activity extends Component {
 }
 const mapStateToProps = state => ({
   alert: state.alert,
+  user: state.user,
 });
-const mapDispatchToProps = dispatch =>
-  bindActionCreators(AlertActions, dispatch);
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Activity);
+const mapDispatchToProps = dispatch => {
+  return {
+    alertActions: bindActionCreators(AlertActions, dispatch),
+    userActions: bindActionCreators(UserActions, dispatch),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Activity);
