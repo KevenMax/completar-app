@@ -156,6 +156,8 @@ class Activity extends Component {
       this.setState({
         showAlert: true,
         titleAlert: 'Ops...',
+        buttonAlert: true,
+        progressAlert: false,
         messageAlert:
           error.response && error.response.data && error.response.data.error
             ? error.response.data.error
