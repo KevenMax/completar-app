@@ -113,7 +113,7 @@ class Activity extends Component {
       data.append('categoria_id', categoria);
       data.append('atividade_id', atividade);
       data.append('descricao', descricao);
-      data.append('quantidade_horas', quantidadeHoras);
+      data.append('quantidade_horas', quantidadeHoras.replace(':', '.'));
       data.append('usuario_id', user_id);
       if (anexo !== null) {
         data.append('anexo', anexo);
