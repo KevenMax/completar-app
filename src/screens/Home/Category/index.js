@@ -20,37 +20,85 @@ import Menu from '../../../components/Menu';
 import ChartMain from '../../../components/ChartMain';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ModalDropdown from 'react-native-modal-dropdown';
+import AwesomeAlert from 'react-native-awesome-alerts';
+import api from '../../../services/api';
 
-export default class Category extends Component {
+import {connect} from 'react-redux';
+import {bindActionCreators} from 'redux';
+import {Creators as CategoryActions} from '../../../store/ducks/category';
+
+class Category extends Component {
   state = {
-    percentual: 80,
+    percentual: 0,
     category: {
-      name: 'Categoria 1',
-      description: 'Atividades artísticas culturais e esportivas',
-      amountHours: 48.5,
+      name: '',
+      description: '',
+      amountHours: 0,
     },
-    activities: [
-      {
-        id: '1',
-        name: 'Evento A',
-        description: 'Participação de Congresso Nacional',
-        hours: 322.62,
-      },
-      {
-        id: '2',
-        name:
-          'Participação de palestra sobre otimização de algoritmos com complexidade exponencial',
-        description: 'UFC do campus de Russas',
-        hours: 3.4,
-      },
-      {
-        id: '3',
-        name:
-          'Evento/apresentação/torneio de grupo de teatro, de dança,coral, literário, musical ou esportivo',
-        description: 'Empresa Júnior',
-        hours: 55.4,
-      },
-    ],
+    activities: [],
+    showAlert: true,
+    progressAlert: true,
+    titleAlert: '',
+    messageAlert: '',
+    buttonAlert: false,
+  };
+
+  componentDidMount() {
+    this.loadCategory();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.category.description !== this.state.category.description) {
+      this.loadActivities();
+    }
+  }
+
+  loadActivities = async () => {
+    try {
+      const request = await api.get(
+        `/horas_complementares?categoria_id=${this.props.category.category_id}`,
+      );
+      const response = request.data.data;
+      console.log(response);
+      this.setState({
+        activities: response,
+        showAlert: false,
+        progressAlert: false,
+      });
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert: 'Ocorreu algum problema ao carregar a Categoria',
+        buttonAlert: true,
+        progressAlert: false,
+      });
+    }
+  };
+
+  loadCategory = async () => {
+    try {
+      const request = await api.get(
+        `/categorias/${this.props.category.category_id}`,
+      );
+      const response = request.data;
+      this.setState({
+        percentual: response.percentual,
+        category: {
+          name: response.categoria.numero,
+          description: response.categoria.nome,
+          amountHours: response.categoria.limite_carga_horaria,
+        },
+      });
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert: 'Ocorreu algum problema ao carregar a Categoria',
+        buttonAlert: true,
+        progressAlert: false,
+      });
+    }
   };
 
   handleOption = (id, option) => {
@@ -61,18 +109,22 @@ export default class Category extends Component {
     return (
       <>
         <ScrollView>
-          <Header name={this.state.category.name} />
+          <Header name={`Categoria ${this.state.category.name}`} />
           <ChartMain percentual={this.state.percentual} props={this.props} />
           <TextDescribe>{this.state.category.description}</TextDescribe>
           <TextTime>({this.state.category.amountHours}h)</TextTime>
           <ContainerItems>
             {this.state.activities.map(activity => (
               <Item key={activity.id}>
-                <TextTimeItem>{activity.hours}h</TextTimeItem>
+                <TextTimeItem>
+                  {activity.attributes['quantidade-horas']}h
+                </TextTimeItem>
                 <ContentText>
-                  <TextHeaderItem>{activity.name}</TextHeaderItem>
+                  <TextHeaderItem>
+                    {activity.relationships.atividade.data.nome}
+                  </TextHeaderItem>
                   <TextDescribeItem ellipsizeMode="middle">
-                    {activity.description}
+                    {activity.attributes.descricao}
                   </TextDescribeItem>
                 </ContentText>
 
@@ -102,7 +154,28 @@ export default class Category extends Component {
           </ContainerItems>
         </ScrollView>
         <Menu props={this.props} />
+        <AwesomeAlert
+          show={this.state.showAlert}
+          showProgress={this.state.progressAlert}
+          title={this.state.titleAlert}
+          message={this.state.messageAlert}
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={this.state.buttonAlert}
+          confirmText="OK"
+          confirmButtonColor="#b275f4"
+          onConfirmPressed={() => this.setState({showAlert: false})}
+        />
       </>
     );
   }
 }
+
+const mapStateToProps = state => ({
+  category: state.category,
+});
+
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(CategoryActions, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Category);
