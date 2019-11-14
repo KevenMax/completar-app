@@ -61,8 +61,8 @@ class Profile extends Component {
           nickname: this.props.user.user.data.attributes.apelido,
           avatar: this.props.user.user.data.attributes.foto,
           matriculation: this.props.user.user.data.attributes.matricula,
-          course: this.props.user.user.included[0].attributes.nome,
-          college: this.props.user.user.included[1].attributes.nome,
+          course: this.props.user.user.included[1].attributes.nome,
+          college: this.props.user.user.included[0].attributes.nome,
           contact: this.props.user.user.data.attributes.contato,
           requiredHours: this.props.user.user.data.attributes[
             'horas-realizadas'
@@ -189,7 +189,4 @@ const mapDispatchToProps = dispatch => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Profile);
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);
