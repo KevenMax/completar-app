@@ -1,6 +1,20 @@
-/* eslint-disable no-alert */
-/* eslint-disable react-native/no-inline-styles */
-import React, {Component} from 'react';
+import React, { Component } from 'react'
+import AwesomeAlert from 'react-native-awesome-alerts'
+import ModalDropdown from 'react-native-modal-dropdown'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import { connect } from 'react-redux'
+
+import PropTypes from 'prop-types'
+import { bindActionCreators } from 'redux'
+import RNFetchBlob from 'rn-fetch-blob'
+
+import ChartMain from '/components/ChartMain'
+import Header from '/components/Header'
+import Menu from '/components/Menu'
+import api from '/services/api'
+import requestStoragePermission from '/services/storagePermission.js'
+import { Creators as CategoryActions } from '/store/ducks/category'
+
 import {
   ScrollView,
   TextDescribe,
@@ -12,20 +26,9 @@ import {
   TextHeaderItem,
   TextDescribeItem,
   OptionItem,
-  TextOption,
-  TextOptionDanger,
-} from './styles';
-import Header from '../../../components/Header';
-import Menu from '../../../components/Menu';
-import ChartMain from '../../../components/ChartMain';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import ModalDropdown from 'react-native-modal-dropdown';
-import AwesomeAlert from 'react-native-awesome-alerts';
-import api from '../../../services/api';
-
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import {Creators as CategoryActions} from '../../../store/ducks/category';
+  DropdownTextStyle,
+  DropdownStyle,
+} from './styles'
 
 class Category extends Component {
   state = {
@@ -41,30 +44,31 @@ class Category extends Component {
     titleAlert: '',
     messageAlert: '',
     buttonAlert: false,
-  };
+  }
 
-  componentDidMount() {
-    this.loadCategory();
+  async componentDidMount() {
+    await requestStoragePermission()
+    this.loadCategory()
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.category.description !== this.state.category.description) {
-      this.loadActivities();
+      this.loadActivities()
     }
   }
 
   loadActivities = async () => {
     try {
+      const { category } = this.props
       const request = await api.get(
-        `/horas_complementares?categoria_id=${this.props.category.category_id}`,
-      );
-      const response = request.data.data;
-      console.log(response);
+        `/horas_complementares?categoria_id=${category.category_id}`,
+      )
+      const response = request.data.data
       this.setState({
         activities: response,
         showAlert: false,
         progressAlert: false,
-      });
+      })
     } catch (error) {
       this.setState({
         showAlert: true,
@@ -72,16 +76,15 @@ class Category extends Component {
         messageAlert: 'Ocorreu algum problema ao carregar a Categoria',
         buttonAlert: true,
         progressAlert: false,
-      });
+      })
     }
-  };
+  }
 
   loadCategory = async () => {
     try {
-      const request = await api.get(
-        `/categorias/${this.props.category.category_id}`,
-      );
-      const response = request.data;
+      const { category } = this.props
+      const request = await api.get(`/categorias/${category.category_id}`)
+      const response = request.data
       this.setState({
         percentual: response.percentual,
         category: {
@@ -89,7 +92,7 @@ class Category extends Component {
           description: response.categoria.nome,
           amountHours: response.categoria.limite_carga_horaria,
         },
-      });
+      })
     } catch (error) {
       this.setState({
         showAlert: true,
@@ -97,33 +100,117 @@ class Category extends Component {
         messageAlert: 'Ocorreu algum problema ao carregar a Categoria',
         buttonAlert: true,
         progressAlert: false,
-      });
+      })
     }
-  };
+  }
 
-  handleOption = (id, option) => {
-    alert(`A opção ${option} foi selecionada, para o id ${id}`);
-  };
+  handleOption = async (id, index) => {
+    const { activities } = this.state
+    const activity = activities.filter(activity => activity.id === id)
+
+    if (index === '0') {
+      this.downloadFile(activity)
+    } else {
+      this.deleteActivity(activity)
+    }
+  }
+
+  downloadFile = async activity => {
+    const date = new Date()
+    const fileURL = activity[0].attributes.anexo.url
+    const DownloadDir = RNFetchBlob.fs.dirs.DownloadDir
+    const ext = this.getExtention(fileURL)
+
+    if (fileURL) {
+      try {
+        let options = {
+          fileCache: true,
+          addAndroidDownloads: {
+            useDownloadManager: true,
+            notification: true,
+            path: `${DownloadDir}/${Math.floor(
+              date.getTime() + date.getSeconds() / 2,
+            )}.${ext}`,
+            description: 'Anexo',
+          },
+        }
+        await RNFetchBlob.config(options).fetch('GET', fileURL)
+      } catch (error) {
+        this.setState({
+          showAlert: true,
+          titleAlert: 'Ops...',
+          messageAlert: 'Ocorreu algum problema ao efetuar o download.',
+          buttonAlert: true,
+          progressAlert: false,
+        })
+      }
+    } else {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert: 'Essa atividade não possui anexo.',
+        buttonAlert: true,
+        progressAlert: false,
+      })
+    }
+  }
+
+  getExtention = filename => {
+    return /[.]/.exec(filename) ? /[^.]+$/.exec(filename) : undefined
+  }
+
+  deleteActivity = async activity => {
+    const { id } = activity[0]
+
+    try {
+      await api.delete(`/horas_complementares/${id}`)
+
+      this.loadActivities()
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert: 'Ocorreu algum problema ao excluir a atividade.',
+        buttonAlert: true,
+        progressAlert: false,
+      })
+    }
+  }
 
   render() {
+    const {
+      category,
+      percentual,
+      activities,
+      showAlert,
+      progressAlert,
+      titleAlert,
+      messageAlert,
+      buttonAlert,
+    } = this.state
+
     return (
       <>
         <ScrollView>
-          <Header name={`Categoria ${this.state.category.name}`} />
-          <ChartMain percentual={this.state.percentual} props={this.props} />
-          <TextDescribe>{this.state.category.description}</TextDescribe>
-          <TextTime>({this.state.category.amountHours}h)</TextTime>
+          <Header name={`Categoria ${category.name}`} />
+
+          <ChartMain percentual={percentual} props={this.props} />
+          <TextDescribe>{category.description}</TextDescribe>
+          <TextTime>({category.amountHours}h)</TextTime>
+
           <ContainerItems>
-            {this.state.activities.map(activity => (
+            {activities.map(activity => (
               <Item key={activity.id}>
                 <TextTimeItem>
                   {activity.attributes['quantidade-horas']}h
                 </TextTimeItem>
+
                 <ContentText>
                   <TextHeaderItem>
                     {activity.relationships.atividade.data.nome}
                   </TextHeaderItem>
-                  <TextDescribeItem ellipsizeMode="middle">
+
+                  <TextDescribeItem ellipsizeMode='middle'>
                     {activity.attributes.descricao}
                   </TextDescribeItem>
                 </ContentText>
@@ -131,51 +218,47 @@ class Category extends Component {
                 <OptionItem>
                   <ModalDropdown
                     options={['Download do anexo', 'Excluir']}
-                    dropdownTextStyle={{
-                      fontSize: 13,
-                      fontFamily: 'Comfortaa-Regular',
-                      color: '#838383',
-                    }}
-                    onSelect={(index, option) =>
-                      this.handleOption(activity.id, option)
-                    }
+                    dropdownTextStyle={DropdownTextStyle}
+                    onSelect={index => this.handleOption(activity.id, index)}
                     showsVerticalScrollIndicator={false}
-                    dropdownStyle={{
-                      width: 160,
-                      height: 85,
-                      padding: 0,
-                      margin: 0,
-                    }}>
-                    <Icon name="ellipsis-v" size={30} color="#b275f4" />
+                    dropdownStyle={DropdownStyle}
+                  >
+                    <Icon name='ellipsis-v' size={30} color='#b275f4' />
                   </ModalDropdown>
                 </OptionItem>
               </Item>
             ))}
           </ContainerItems>
         </ScrollView>
+
         <Menu props={this.props} />
+
         <AwesomeAlert
-          show={this.state.showAlert}
-          showProgress={this.state.progressAlert}
-          title={this.state.titleAlert}
-          message={this.state.messageAlert}
+          show={showAlert}
+          showProgress={progressAlert}
+          title={titleAlert}
+          message={messageAlert}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={false}
-          showConfirmButton={this.state.buttonAlert}
-          confirmText="OK"
-          confirmButtonColor="#b275f4"
-          onConfirmPressed={() => this.setState({showAlert: false})}
+          showConfirmButton={buttonAlert}
+          confirmText='OK'
+          confirmButtonColor='#b275f4'
+          onConfirmPressed={() => this.setState({ showAlert: false })}
         />
       </>
-    );
+    )
   }
 }
 
 const mapStateToProps = state => ({
   category: state.category,
-});
+})
 
 const mapDispatchToProps = dispatch =>
-  bindActionCreators(CategoryActions, dispatch);
+  bindActionCreators(CategoryActions, dispatch)
 
-export default connect(mapStateToProps, mapDispatchToProps)(Category);
+export default connect(mapStateToProps, mapDispatchToProps)(Category)
+
+Category.propTypes = {
+  category: PropTypes.object.isRequired,
+}
