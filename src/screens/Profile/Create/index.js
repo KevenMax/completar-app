@@ -1,4 +1,14 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react'
+import DocumentPicker from 'react-native-document-picker'
+import { connect } from 'react-redux'
+
+import PropTypes from 'prop-types'
+import { bindActionCreators } from 'redux'
+
+import Header from '/components/Header'
+import api from '/services/api'
+import { Creators as AlertActions } from '/store/ducks/alert'
+import { Creators as UserActions } from '/store/ducks/user'
 
 import {
   ScrollView,
@@ -18,17 +28,7 @@ import {
   NumberContactInput,
   TextSelectInput,
   Alert,
-} from './styles';
-
-import Header from '../../../components/Header';
-import DocumentPicker from 'react-native-document-picker';
-
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import {Creators as AlertActions} from '../../../store/ducks/alert';
-import {Creators as UserActions} from '../../../store/ducks/user';
-
-import api from '../../../services/api';
+} from './styles'
 
 class Create extends Component {
   state = {
@@ -44,31 +44,31 @@ class Create extends Component {
     showAlert: false,
     titleAlert: '',
     messageAlert: '',
-  };
+  }
 
   componentDidMount() {
-    this.loadCourse();
+    this.loadCourse()
   }
 
   loadCourse = async () => {
     try {
-      const request = await api.get('/cursos');
-      this.setState({listCourses: request.data.data});
+      const request = await api.get('/cursos')
+      this.setState({ listCourses: request.data.data })
     } catch (err) {
       this.setState({
         showAlert: true,
         messageAlert: 'Ops...',
         titleAlert: 'Ocorreu algum problema ao carregar os cursos',
-      });
+      })
     }
-  };
+  }
 
   handlePicture = async () => {
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.images],
-      });
-      this.setState({fillImage: res.name, image: res});
+      })
+      this.setState({ fillImage: res.name, image: res })
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         // User cancelled the picker, exit any dialogs or menus and move on
@@ -77,51 +77,51 @@ class Create extends Component {
           showAlert: true,
           messageAlert: 'Ops...',
           titleAlert: 'Ocorreu algum problema ao selecionar a foto',
-        });
+        })
       }
     }
-  };
+  }
 
   setMatriculation = matriculation => {
-    this.setState({matriculation: matriculation.replace(/[^\d]+/g, '')});
-  };
+    this.setState({ matriculation: matriculation.replace(/[^\d]+/g, '') })
+  }
 
   handleCourse = value => {
-    this.setState({fillCourse: value.attributes.nome, course: value.id});
-  };
+    this.setState({ fillCourse: value.attributes.nome, course: value.id })
+  }
 
-  renderRowSelect = (rowData, rowID, highlighted) => {
-    return <TextSelectInput>{rowData.attributes.nome}</TextSelectInput>;
-  };
+  renderRowSelect = rowData => {
+    return <TextSelectInput>{rowData.attributes.nome}</TextSelectInput>
+  }
 
   handleSubmit = async () => {
-    const {name, nickname, matriculation, contact, image, course} = this.state;
-    if (!name || !nickname || !matriculation || !contact || !course) {
+    const { name, nickname, matriculation, contact, image, course } = this.state
+    if (!name || !nickname || !matriculation || !course) {
       this.setState({
         showAlert: true,
         messageAlert:
           'Para realizar o cadastro preencha todo os campos do formulário',
         titleAlert: 'Preencha todos os campos',
-      });
+      })
     } else {
-      const data = new FormData();
-      data.append('nome', name);
-      data.append('apelido', nickname);
-      data.append('matricula', matriculation);
-      data.append('contato', contact);
-      data.append('foto', image);
-      data.append('curso_id', course);
+      const data = new FormData()
+      data.append('nome', name)
+      data.append('apelido', nickname)
+      data.append('matricula', matriculation)
+      data.append('contato', contact)
+      data.append('foto', image)
+      data.append('curso_id', course)
       try {
-        const request = await api.put('usuarios/update', data);
-        const user = request.data;
+        const request = await api.put('usuarios/update', data)
+        const user = request.data
 
-        this.props.userActions.setUser(user);
+        this.props.userActions.setUser(user)
         this.props.alertActions.addAlert(
           true,
           'Perfil criado',
           'Seu perfil foi criado com sucesso!',
-        );
-        this.props.navigation.navigate('Home');
+        )
+        this.props.navigation.navigate('Home')
       } catch (err) {
         this.setState({
           showAlert: true,
@@ -130,60 +130,72 @@ class Create extends Component {
             err.response && err.response.data
               ? err.response.data[0]
               : 'Verifique sua conexão com a internet',
-        });
+        })
       }
     }
-  };
+  }
 
   render() {
+    const {
+      name,
+      nickname,
+      matriculation,
+      listCourses,
+      fillCourse,
+      contact,
+      fillImage,
+      showAlert,
+      titleAlert,
+      messageAlert,
+    } = this.state
     return (
       <>
         <ScrollView>
-          <Header name="Completar Perfil" />
+          <Header name='Completar Perfil' />
+
           <Form>
             <Label>Nome Completo *</Label>
             <TextInput
-              value={this.state.name}
-              onChangeText={text => this.setState({name: text})}
+              value={name}
+              onChangeText={text => this.setState({ name: text })}
             />
 
             <Label>Apelido *</Label>
             <TextInput
-              value={this.state.nickname}
-              onChangeText={text => this.setState({nickname: text})}
+              value={nickname}
+              onChangeText={text => this.setState({ nickname: text })}
             />
 
             <Label>Matrícula *</Label>
             <NumberInput
               maxLength={6}
               onChangeText={text => this.setMatriculation(text)}
-              value={this.state.matriculation}
+              value={matriculation}
             />
 
             <Label>Curso *</Label>
             <ContainerSelect>
               <SelectInput
-                options={this.state.listCourses}
+                options={listCourses}
                 renderRow={this.renderRowSelect.bind(this)}
-                onSelect={(index, value) => this.handleCourse(value)}>
+                onSelect={(index, value) => this.handleCourse(value)}
+              >
                 <ContainerTextSelect>
-                  <TextSelectShowInput>
-                    {this.state.fillCourse}
-                  </TextSelectShowInput>
+                  <TextSelectShowInput>{fillCourse}</TextSelectShowInput>
                   <ArrowInput />
                 </ContainerTextSelect>
               </SelectInput>
             </ContainerSelect>
 
-            <Label>Contato *</Label>
+            <Label>Contato </Label>
             <NumberContactInput
-              value={this.state.contact}
-              onChangeText={text => this.setState({contact: text})}
+              value={contact}
+              onChangeText={text => this.setState({ contact: text })}
             />
 
             <Label>Foto </Label>
             <FileInput onPress={() => this.handlePicture()}>
-              <TextFileInput>{this.state.fillImage}</TextFileInput>
+              <TextFileInput>{fillImage}</TextFileInput>
             </FileInput>
 
             <Submit onPress={() => this.handleSubmit()}>
@@ -191,22 +203,23 @@ class Create extends Component {
             </Submit>
           </Form>
         </ScrollView>
+
         <Alert
-          show={this.state.showAlert}
+          show={showAlert}
           showProgress={false}
-          title={this.state.titleAlert}
-          message={this.state.messageAlert}
+          title={titleAlert}
+          message={messageAlert}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={false}
           showConfirmButton={true}
-          confirmText="OK, entendi"
-          confirmButtonColor="#b275f4"
+          confirmText='OK, entendi'
+          confirmButtonColor='#b275f4'
           onConfirmPressed={() => {
-            this.setState({showAlert: false});
+            this.setState({ showAlert: false })
           }}
         />
       </>
-    );
+    )
   }
 }
 
@@ -214,12 +227,14 @@ const mapDispatchToProps = dispatch => {
   return {
     alertActions: bindActionCreators(AlertActions, dispatch),
     userActions: bindActionCreators(UserActions, dispatch),
-  };
-};
-// const mapDispatchToProps = dispatch =>
-//   bindActionCreators(AlertActions, dispatch);
+  }
+}
 
-export default connect(
-  null,
-  mapDispatchToProps,
-)(Create);
+export default connect(null, mapDispatchToProps)(Create)
+
+Create.propTypes = {
+  user: PropTypes.object.isRequired,
+  userActions: PropTypes.object.isRequired,
+  alertActions: PropTypes.object.isRequired,
+  navigation: PropTypes.object.isRequired,
+}
