@@ -166,6 +166,7 @@ class Category extends Component {
       await api.delete(`/horas_complementares/${id}`)
 
       this.loadActivities()
+      this.loadCategory()
     } catch (error) {
       this.setState({
         showAlert: true,
