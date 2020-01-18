@@ -1,8 +1,10 @@
+import { API_HOST } from 'react-native-dotenv'
+
 import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: `${API_HOST}`,
 })
 
 api.interceptors.request.use(async config => {
