@@ -25,8 +25,8 @@ export const Chart = styled.View`
 `;
 
 export const TextDescribe = styled.Text`
+  margin: 15px 0;
   margin-left: 13px;
-  margin-top: 15px;
   font-family: 'Comfortaa-Regular';
   font-size: 13px;
   color: #838383;

@@ -18,32 +18,44 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {Creators as AlertActions} from '../../store/ducks/alert';
 import {Creators as CategoryActions} from '../../store/ducks/category';
-import AsyncStorage from '@react-native-community/async-storage';
+import api from '../../services/api';
+
 class Home extends Component {
   state = {
-    percentual: 50,
-    showAlert: false,
-    messageAlert: '',
+    percentual: 0,
+    showAlert: true,
+    messageAlert: 'Carregando...',
     titleAlert: '',
-    categoryList: [
-      {
-        id: '1',
-        descricao:
-          'Teoria da Atividade com Trabalhos de Pesquisa e com t Cientificas voltadas para IA com enfase na estatitica do trabalho brasileiro',
-        percentual: 50,
-      },
-      {
-        id: '2',
-        descricao:
-          'Teoria da Atividade com Trabalhos de Pesquisa e com t Cientificas voltadas para IA com enfase na estatitica do trabalho brasileiro',
-        percentual: 20,
-      },
-    ],
+    progressAlert: true,
+    showButton: false,
+    categoryList: [],
   };
 
   componentDidMount() {
     this.alert();
+    this.loadCategory();
   }
+
+  loadCategory = async () => {
+    try {
+      const request = await api.get('/categorias/home');
+      const response = request.data;
+      this.setState({
+        percentual: response.percentual,
+        categoryList: response.categorias,
+        progressAlert: false,
+        showAlert: !this.props.alert.show ? false : true,
+      });
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert: 'Ocorreu algum problema ao carregar os dados',
+        showButton: true,
+        progressAlert: false,
+      });
+    }
+  };
 
   alert = () => {
     if (this.props.alert.show) {
@@ -52,6 +64,8 @@ class Home extends Component {
         showAlert: show,
         titleAlert: title,
         messageAlert: message,
+        showButton: true,
+        progressAlert: false,
       });
     }
   };
@@ -95,7 +109,7 @@ class Home extends Component {
                   </AnimatedCircularProgress>
                 </Chart>
                 <TextDescribe ellipsizeMode="middle">
-                  {category.descricao}
+                  {category.nome}
                 </TextDescribe>
               </Item>
             ))}
@@ -104,12 +118,12 @@ class Home extends Component {
         <Menu props={this.props} />
         <AwesomeAlert
           show={this.state.showAlert}
-          showProgress={false}
+          showProgress={this.state.progressAlert}
           title={this.state.titleAlert}
           message={this.state.messageAlert}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={false}
-          showConfirmButton={true}
+          showConfirmButton={this.state.showButton}
           confirmText="OK"
           confirmButtonColor="#b275f4"
           onConfirmPressed={() => this.handleConfirmAlert()}

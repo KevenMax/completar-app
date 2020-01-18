@@ -1,4 +1,16 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react'
+import DocumentPicker from 'react-native-document-picker'
+import { connect } from 'react-redux'
+
+import PropTypes from 'prop-types'
+import { bindActionCreators } from 'redux'
+
+import Header from '/components/Header'
+import Menu from '/components/Menu'
+import api from '/services/api'
+import { Creators as AlertActions } from '/store/ducks/alert'
+import { Creators as UserActions } from '/store/ducks/user'
+
 import {
   ScrollView,
   Form,
@@ -16,132 +28,216 @@ import {
   ContainerTextSelect,
   ArrowInput,
   Alert,
-} from './styles';
-import Header from '../../components/Header';
-import Menu from '../../components/Menu';
-import DocumentPicker from 'react-native-document-picker';
-
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import {Creators as AlertActions} from '../../store/ducks/alert';
+} from './styles'
 
 class Activity extends Component {
   state = {
-    categoria: null,
-    fillCategoria: 'Selecione uma opção',
-    atividade: null,
-    fillAtividade: 'Selecione uma opção',
-    descricao: '',
-    quantidadeHoras: '',
-    anexo: null,
-    fillAnexo: 'Nenhum arquivo selecionado',
-    listCategorias: [
-      {
-        id: 1,
-        nome:
-          'Essa é geralmente uma propriedade que é quase sempre definida como flex-wrap: wrap; Pois assim quando um dos flex itens atinge o limite do conteúdo, o último item passa para a coluna debaixo e assim por diante.',
-      },
-      {id: 2, nome: 'Categoria 2'},
-      {id: 3, nome: 'Categoria 3'},
-      {id: 4, nome: 'Categoria 4'},
-      {
-        id: 5,
-        nome:
-          'Essa é geralmente uma propriedade que é quase sempre definida como flex-wrap: wrap; Pois assim quando um dos flex itens atinge o limite do conteúdo, o último item passa para a coluna debaixo e assim por diante.',
-      },
-      {id: 6, nome: 'Categoria 2'},
-      {id: 7, nome: 'Categoria 3'},
-      {id: 8, nome: 'Categoria 4'},
-    ],
-    listAtividades: [
-      {
-        id: 1,
-        nome:
-          'Participação na diretoria de empresa júnior, como presidente e vice-presidente ou diretor',
-      },
-      {id: 2, nome: 'Atividade 2'},
-      {id: 3, nome: 'Atividade 3'},
-      {id: 4, nome: 'Atividade 4'},
-    ],
-    showAlert: false,
+    user_id: this.props.user.user.data.id,
+    category: null,
+    fillCategory: 'Selecione uma opção',
+    activity: null,
+    fillActivity: 'Selecione uma opção',
+    description: '',
+    hours: '',
+    attachment: null,
+    fillAttachment: 'Nenhum arquivo selecionado',
+    listCategories: [],
+    listActivities: [],
+    showAlert: true,
     messageAlert: '',
     titleAlert: '',
-  };
+    progressAlert: true,
+    buttonAlert: false,
+    disabledActivity: true,
+  }
+
+  componentDidMount() {
+    this.loadCategory()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.category !== this.state.category) {
+      this.loadActivity()
+    }
+  }
 
   handleUploadFile = async () => {
     try {
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
-      });
-      this.setState({fillAnexo: res.name, anexo: res});
+      })
+      this.setState({ fillAttachment: res.name, attachment: res })
     } catch (err) {
       if (DocumentPicker.isCancel(err)) {
         // User cancelled the picker, exit any dialogs or menus and move on
       } else {
-        throw err;
+        this.setState({
+          showAlert: true,
+          messageAlert: 'Ops...',
+          titleAlert: 'Ocorreu algum problema ao selecionar a foto',
+        })
       }
     }
-  };
+  }
 
-  renderRowSelect = (rowData, rowID, highlighted) => {
-    return <TextSelectInput>{rowData.nome}</TextSelectInput>;
-  };
+  renderRowSelect = rowData => {
+    return <TextSelectInput>{rowData.nome}</TextSelectInput>
+  }
 
-  handleCategoria = (index, value) => {
-    this.setState({fillCategoria: value.nome, categoria: value.id});
-  };
+  handleCategory = (index, value) => {
+    this.setState({
+      fillCategory: value.nome,
+      category: value.id,
+      fillActivity: 'Selecione uma opção',
+      activity: null,
+      disabledActivity: false,
+    })
+  }
 
-  handleAtividade = (index, value) => {
-    this.setState({fillAtividade: value.nome, atividade: value.id});
-  };
+  handleActivity = (index, value) => {
+    this.setState({ fillActivity: value.nome, activity: value.id })
+  }
 
-  handleSubmit = () => {
+  handleSubmit = async () => {
     const {
-      categoria,
-      atividade,
-      descricao,
-      quantidadeHoras,
-      anexo,
-    } = this.state;
-    if (!categoria || !atividade || !descricao || !quantidadeHoras) {
+      category,
+      activity,
+      description,
+      hours,
+      attachment,
+      user_id,
+    } = this.state
+    if (this.checkInputs()) {
+      const data = new FormData()
+
+      data.append('categoria_id', category)
+      data.append('atividade_id', activity)
+      data.append('descricao', description)
+      data.append('quantidade_horas', hours.replace(':', '.'))
+      data.append('usuario_id', user_id)
+      if (attachment !== null) {
+        data.append('anexo', attachment)
+      }
+
+      try {
+        const request = await api.post('/horas_complementares', data)
+        const response = request.data
+
+        this.props.alertActions.addAlert(
+          true,
+          'Cadastro realizado',
+          'A atividade foi cadastrada com sucesso!',
+        )
+        this.props.userActions.setUser(response)
+        this.props.navigation.navigate('Home')
+      } catch (error) {
+        this.setState({
+          showAlert: true,
+          titleAlert: 'Ops...',
+          messageAlert:
+            error.response && error.response.data && error.response.data.error
+              ? error.response.data.error
+              : 'Ocorreu algum problema ao cadastrar os dados',
+          buttonAlert: true,
+          progressAlert: false,
+        })
+      }
+    }
+  }
+
+  checkInputs = () => {
+    const { category, activity, description, hours } = this.state
+
+    if (!category || !activity || !description || !hours) {
       this.setState({
         showAlert: true,
         messageAlert:
           'Para realizar o cadastro preencha todo os campos do formulário',
         titleAlert: 'Preencha todos os campos',
-      });
-    } else {
-      const data = new FormData();
-      data.append('categoria_id', categoria);
-      data.append('atividade_id', atividade);
-      data.append('descricao', descricao);
-      data.append('quantidade_horas', quantidadeHoras);
-      data.append('anexo', anexo);
-      this.props.addAlert(
-        true,
-        'Cadastro realizado',
-        'A atividade foi cadastrada com sucesso!',
-      );
-      this.props.navigation.navigate('Home');
+        buttonAlert: true,
+        progressAlert: false,
+      })
+      return false
     }
-  };
+    return true
+  }
+
+  loadCategory = async () => {
+    try {
+      const request = await api.get('/categorias')
+      const response = request.data
+      this.setState({
+        listCategories: response,
+        showAlert: false,
+        showProgress: false,
+      })
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        buttonAlert: true,
+        progressAlert: false,
+        messageAlert:
+          error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Ocorreu algum problema ao carregar os dados',
+      })
+    }
+  }
+
+  loadActivity = async () => {
+    const { category } = this.state
+    try {
+      const request = await api.get(`/atividades?categoria_id=${category}`)
+      const response = request.data
+      this.setState({
+        listActivities: response,
+        showAlert: false,
+        showProgress: false,
+      })
+    } catch (error) {
+      this.setState({
+        showAlert: true,
+        titleAlert: 'Ops...',
+        messageAlert:
+          error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : 'Ocorreu algum problema ao carregar os dados',
+      })
+    }
+  }
 
   render() {
+    const {
+      disabledActivity,
+      listCategories,
+      fillCategory,
+      listActivities,
+      fillActivity,
+      hours,
+      fillAttachment,
+      showAlert,
+      progressAlert,
+      titleAlert,
+      messageAlert,
+      buttonAlert,
+    } = this.state
     return (
       <>
         <ScrollView>
-          <Header name="Cadastrar Atividade" />
+          <Header name='Cadastrar Atividade' />
+
           <Form>
             <Label>Categoria *</Label>
             <ContainerSelect>
               <SelectInput
-                options={this.state.listCategorias}
+                options={listCategories}
                 renderRow={this.renderRowSelect.bind(this)}
-                onSelect={(index, value) => this.handleCategoria(index, value)}>
+                onSelect={(index, value) => this.handleCategory(index, value)}
+              >
                 <ContainerTextSelect>
-                  <TextSelectShowInput>
-                    {this.state.fillCategoria}
-                  </TextSelectShowInput>
+                  <TextSelectShowInput>{fillCategory}</TextSelectShowInput>
+
                   <ArrowInput />
                 </ContainerTextSelect>
               </SelectInput>
@@ -150,13 +246,14 @@ class Activity extends Component {
             <Label>Atividade da Categoria *</Label>
             <ContainerSelect>
               <SelectInput
-                options={this.state.listAtividades}
+                options={listActivities}
                 renderRow={this.renderRowSelect.bind(this)}
-                onSelect={(index, value) => this.handleAtividade(index, value)}>
+                onSelect={(index, value) => this.handleActivity(index, value)}
+                disabled={disabledActivity}
+              >
                 <ContainerTextSelect>
-                  <TextSelectShowInput>
-                    {this.state.fillAtividade}
-                  </TextSelectShowInput>
+                  <TextSelectShowInput>{fillActivity}</TextSelectShowInput>
+
                   <ArrowInput />
                 </ContainerTextSelect>
               </SelectInput>
@@ -164,18 +261,18 @@ class Activity extends Component {
 
             <Label>Descrição *</Label>
             <TextInput
-              onChangeText={text => this.setState({descricao: text})}
+              onChangeText={text => this.setState({ description: text })}
             />
 
             <Label>Quantidade de Horas *</Label>
             <NumberInput
-              value={this.state.quantidadeHoras}
-              onChangeText={text => this.setState({quantidadeHoras: text})}
+              value={hours}
+              onChangeText={text => this.setState({ hours: text })}
             />
 
             <Label>Anexo </Label>
             <FileInput onPress={() => this.handleUploadFile()}>
-              <TextFileInput>{this.state.fillAnexo}</TextFileInput>
+              <TextFileInput>{fillAttachment}</TextFileInput>
             </FileInput>
 
             <Submit onPress={this.handleSubmit}>
@@ -184,34 +281,42 @@ class Activity extends Component {
           </Form>
         </ScrollView>
         <Menu props={this.props} />
+
         <Alert
-          show={this.state.showAlert}
-          showProgress={false}
-          title={this.state.titleAlert}
-          message={this.state.messageAlert}
+          show={showAlert}
+          showProgress={progressAlert}
+          title={titleAlert}
+          message={messageAlert}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={false}
-          showConfirmButton={true}
-          confirmText="OK, entendi"
-          confirmButtonColor="#b275f4"
+          showConfirmButton={buttonAlert}
+          confirmText='OK, entendi'
+          confirmButtonColor='#b275f4'
           onConfirmPressed={() => {
-            this.setState({showAlert: false});
+            this.setState({ showAlert: false })
           }}
-          // showCancelButton={true}
-          // cancelText="No, cancel"
-          // onCancelPressed={() => this.setState({showAlert: false})}
         />
       </>
-    );
+    )
   }
 }
 const mapStateToProps = state => ({
   alert: state.alert,
-});
-const mapDispatchToProps = dispatch =>
-  bindActionCreators(AlertActions, dispatch);
+  user: state.user,
+})
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Activity);
+const mapDispatchToProps = dispatch => {
+  return {
+    alertActions: bindActionCreators(AlertActions, dispatch),
+    userActions: bindActionCreators(UserActions, dispatch),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Activity)
+
+Activity.propTypes = {
+  user: PropTypes.object,
+  alertActions: PropTypes.object,
+  userActions: PropTypes.object,
+  navigation: PropTypes.object,
+}
