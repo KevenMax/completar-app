@@ -24,7 +24,6 @@ import {
 
 class Home extends Component {
   state = {
-    _isMounted: false,
     percentual: 0,
     showAlert: true,
     messageAlert: 'Carregando...',
