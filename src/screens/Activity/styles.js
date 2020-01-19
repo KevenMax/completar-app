@@ -129,7 +129,9 @@ export const TextFileInput = styled.Text.attrs({
   padding-left: 15px;
   padding-right: 15px;
 `
-export const Submit = styled.TouchableOpacity`
+export const Submit = styled.TouchableOpacity.attrs({
+  activeOpacity: 0.8,
+})`
   margin-top: 30px;
   height: 35px;
   background: #b275f4;
