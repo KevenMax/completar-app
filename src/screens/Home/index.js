@@ -42,8 +42,13 @@ class Home extends Component {
   }
 
   checkUser = () => {
-    const { matricula } = this.props.user.user.data.attributes
-    if (!matricula) {
+    if (
+      !this.props.user ||
+      !this.props.user.user ||
+      !this.props.user.user.data ||
+      !this.props.user.user.data.attributes ||
+      !this.props.user.user.data.attributes.matricula
+    ) {
       this.props.navigation.navigate('Create')
       return false
     }
