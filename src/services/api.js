@@ -1,7 +1,7 @@
-import { API_HOST } from 'react-native-dotenv'
-
 import AsyncStorage from '@react-native-community/async-storage'
 import axios from 'axios'
+
+import { API_HOST } from '/environment'
 
 const api = axios.create({
   baseURL: `${API_HOST}`,
