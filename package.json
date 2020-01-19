@@ -67,5 +67,25 @@
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
+  },
+  "babel": {
+    "presets": [
+      "module:metro-react-native-babel-preset"
+    ],
+    "plugins": [
+      [
+        "module-resolver",
+        {
+          "root": [
+            "./src"
+          ]
+        }
+      ]
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "./node_modules/commitlint-config-gitmoji"
+    ]
   }
 }
