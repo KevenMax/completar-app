@@ -30,7 +30,7 @@ export const ContainerSelect = styled.View`
   background: #d1d8fa;
   border-radius: 40px;
   height: 35px;
-  padding: 5px 15px;
+  padding: 4px 15px 0 15px;
 `
 
 export const SelectInput = styled(ModalDropdown).attrs({
