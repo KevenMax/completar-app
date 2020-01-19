@@ -14,6 +14,7 @@ import Menu from '/components/Menu'
 import api from '/services/api'
 import requestStoragePermission from '/services/storagePermission.js'
 import { Creators as CategoryActions } from '/store/ducks/category'
+import { Creators as UserActions } from '/store/ducks/user'
 
 import {
   ScrollView,
@@ -163,10 +164,11 @@ class Category extends Component {
     const { id } = activity[0]
 
     try {
-      await api.delete(`/horas_complementares/${id}`)
+      const response = await api.delete(`/horas_complementares/${id}`)
 
       this.loadActivities()
       this.loadCategory()
+      this.props.userActions.setUser(response.data)
     } catch (error) {
       this.setState({
         showAlert: true,
@@ -253,13 +255,19 @@ class Category extends Component {
 
 const mapStateToProps = state => ({
   category: state.category,
+  user: state.user,
 })
 
-const mapDispatchToProps = dispatch =>
-  bindActionCreators(CategoryActions, dispatch)
+const mapDispatchToProps = dispatch => {
+  return {
+    categoryActions: bindActionCreators(CategoryActions, dispatch),
+    userActions: bindActionCreators(UserActions, dispatch),
+  }
+}
 
 export default connect(mapStateToProps, mapDispatchToProps)(Category)
 
 Category.propTypes = {
   category: PropTypes.object.isRequired,
+  userActions: PropTypes.object.isRequired,
 }

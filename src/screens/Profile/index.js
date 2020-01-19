@@ -1,4 +1,17 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import { connect } from 'react-redux'
+
+import AsyncStorage from '@react-native-community/async-storage'
+import PropTypes from 'prop-types'
+import { bindActionCreators } from 'redux'
+
+import avatar from '/assets/images/avatar.png'
+import Header from '/components/Header'
+import Menu from '/components/Menu'
+import { Creators as AlertActions } from '/store/ducks/alert'
+import { Creators as UserActions } from '/store/ducks/user'
+
 import {
   ScrollView,
   ContainerHeader,
@@ -18,17 +31,7 @@ import {
   ButtonLogout,
   TextLogout,
   Alert,
-} from './styles';
-import Header from '../../components/Header';
-import Menu from '../../components/Menu';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import avatar from '../../assets/images/avatar.png';
-
-import {connect} from 'react-redux';
-import {bindActionCreators} from 'redux';
-import {Creators as UserActions} from '../../store/ducks/user';
-import {Creators as AlertActions} from '../../store/ducks/alert';
-import AsyncStorage from '@react-native-community/async-storage';
+} from './styles'
 
 class Profile extends Component {
   state = {
@@ -46,147 +49,193 @@ class Profile extends Component {
     showAlert: false,
     titleAlert: '',
     messageAlert: '',
-  };
+  }
 
   componentDidMount() {
-    this.alert();
-    this.loadUser();
+    this.alert()
+    this.loadUser()
   }
 
   loadUser = () => {
     if (this.props.user.user !== null) {
+      const {
+        nome,
+        apelido,
+        foto,
+        matricula,
+        contato,
+        ['total-horas']: totalHoras,
+        ['horas-realizadas']: horasRealizadas,
+      } = this.props.user.user.data.attributes
+
+      const campus = this.props.user.user.included[0].attributes.nome
+      const curso = this.props.user.user.included[1].attributes.nome
+
       this.setState({
         person: {
-          name: this.props.user.user.data.attributes.nome,
-          nickname: this.props.user.user.data.attributes.apelido,
-          avatar: this.props.user.user.data.attributes.foto,
-          matriculation: this.props.user.user.data.attributes.matricula,
-          course: this.props.user.user.included[1].attributes.nome,
-          college: this.props.user.user.included[0].attributes.nome,
-          contact: this.props.user.user.data.attributes.contato,
-          requiredHours: this.props.user.user.data.attributes[
-            'horas-realizadas'
-          ],
-          totalHours: this.props.user.user.data.attributes['total-horas'],
+          name: nome,
+          nickname: apelido,
+          avatar: foto,
+          matriculation: matricula,
+          contact: contato,
+          requiredHours: horasRealizadas,
+          totalHours: totalHoras,
+          college: campus,
+          course: curso,
         },
-      });
+      })
     }
-  };
+  }
 
   alert = () => {
     if (this.props.alert.show) {
-      const {show, title, message} = this.props.alert;
+      const { show, title, message } = this.props.alert
       this.setState({
         showAlert: show,
         titleAlert: title,
         messageAlert: message,
-      });
+      })
     }
-  };
+  }
 
   handleConfirmAlert = () => {
     this.setState({
       showAlert: false,
       titleAlert: '',
       messageAlert: '',
-    });
-    this.props.alertActions.removeAlert('');
-  };
+    })
+    this.props.alertActions.removeAlert('')
+  }
 
-  handleEdit = id => {
-    // this.props.userActions.setUser(id);
-    this.props.navigation.navigate('Edit');
-  };
+  handleEdit = () => {
+    this.props.navigation.navigate('Edit')
+  }
 
   handleLogout = () => {
-    AsyncStorage.clear();
-    this.props.navigation.navigate('SignIn');
-  };
+    AsyncStorage.clear()
+    this.props.navigation.navigate('SignIn')
+  }
 
   render() {
     const avatarImage = this.state.person.avatar
-      ? {uri: this.state.person.avatar}
-      : avatar;
+      ? { uri: this.state.person.avatar }
+      : avatar
+
+    const {
+      person: {
+        nickname,
+        name,
+        matriculation,
+        course,
+        college,
+        contact,
+        requiredHours,
+        totalHours,
+      },
+      showAlert,
+      titleAlert,
+      messageAlert,
+    } = this.state
+
     return (
       <>
         <ScrollView>
-          <Header name="Perfil" />
+          <Header name='Perfil' />
+
           <ContainerHeader>
             <Avatar source={avatarImage} />
-            <ButttonEdit onPress={() => this.handleEdit(this.state.person.id)}>
+
+            <ButttonEdit onPress={() => this.handleEdit()}>
               <Icon
-                name="pencil"
+                name='pencil'
                 size={20}
-                color="#fff"
-                style={{textAlign: 'center', paddingTop: 9}}
+                color='#fff'
+                style={{ textAlign: 'center', paddingTop: 9 }}
               />
             </ButttonEdit>
           </ContainerHeader>
-          <Nickname>{this.state.person.nickname || ''}</Nickname>
-          <Name>{this.state.person.name || ''}</Name>
+
+          <Nickname>{nickname || ''}</Nickname>
+          <Name>{name || ''}</Name>
+
           <Info>
             <Item>
               <TextLabel>Matricula</TextLabel>
-              <TextValue>{this.state.person.matriculation || ''}</TextValue>
+              <TextValue>{matriculation || ''}</TextValue>
             </Item>
+
             <Item>
               <TextLabel>Curso</TextLabel>
-              <TextValue>{this.state.person.course || ''}</TextValue>
+              <TextValue>{course || ''}</TextValue>
             </Item>
+
             <Item>
               <TextLabel>Campus</TextLabel>
-              <TextValue>{this.state.person.college || ''}</TextValue>
+              <TextValue>{college || ''}</TextValue>
             </Item>
+
             <Item>
               <TextLabel>Contato</TextLabel>
-              <TextValue>{this.state.person.contact || ''}</TextValue>
+              <TextValue>{contact || ''}</TextValue>
             </Item>
           </Info>
+
           <InfoTime>
             <TimeDone>
-              <Bold>{this.state.person.requiredHours || ''} horas</Bold>{' '}
-              realizadas
+              <Bold>{requiredHours || ''} horas</Bold> realizadas
             </TimeDone>
+
             <Line />
+
             <TimePending>
-              <Bold>{this.state.person.totalHours || ''} horas</Bold>{' '}
-              necessárias
+              <Bold>{totalHours || ''} horas</Bold> necessárias
             </TimePending>
           </InfoTime>
+
           <ButtonLogout onPress={() => this.handleLogout()}>
             <TextLogout>
-              SAIR <Icon name="sign-out" size={20} color="#b275f4" />
+              SAIR <Icon name='sign-out' size={20} color='#b275f4' />
             </TextLogout>
           </ButtonLogout>
         </ScrollView>
+
         <Menu props={this.props} />
+
         <Alert
-          show={this.state.showAlert}
+          show={showAlert}
           showProgress={false}
-          title={this.state.titleAlert}
-          message={this.state.messageAlert}
+          title={titleAlert}
+          message={messageAlert}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={false}
           showConfirmButton={true}
-          confirmText="OK, entendi"
-          confirmButtonColor="#b275f4"
+          confirmText='OK, entendi'
+          confirmButtonColor='#b275f4'
           onConfirmPressed={() => this.handleConfirmAlert()}
         />
       </>
-    );
+    )
   }
 }
 
 const mapStateToProps = state => ({
   alert: state.alert,
   user: state.user,
-});
+})
 
 const mapDispatchToProps = dispatch => {
   return {
     userActions: bindActionCreators(UserActions, dispatch),
     alertActions: bindActionCreators(AlertActions, dispatch),
-  };
-};
+  }
+}
 
-export default connect(mapStateToProps, mapDispatchToProps)(Profile);
+export default connect(mapStateToProps, mapDispatchToProps)(Profile)
+
+Profile.propTypes = {
+  alertActions: PropTypes.object,
+  userActions: PropTypes.object,
+  user: PropTypes.object.isRequired,
+  alert: PropTypes.object.isRequired,
+  navigation: PropTypes.object.isRequired,
+}

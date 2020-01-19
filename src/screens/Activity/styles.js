@@ -30,7 +30,7 @@ export const ContainerSelect = styled.View`
   background: #d1d8fa;
   border-radius: 40px;
   height: 35px;
-  padding: 5px 15px;
+  padding: 4px 15px 0 15px;
 `
 
 export const SelectInput = styled(ModalDropdown).attrs({
@@ -129,7 +129,9 @@ export const TextFileInput = styled.Text.attrs({
   padding-left: 15px;
   padding-right: 15px;
 `
-export const Submit = styled.TouchableOpacity`
+export const Submit = styled.TouchableOpacity.attrs({
+  activeOpacity: 0.8,
+})`
   margin-top: 30px;
   height: 35px;
   background: #b275f4;

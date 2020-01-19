@@ -68,9 +68,7 @@ class Activity extends Component {
       })
       this.setState({ fillAttachment: res.name, attachment: res })
     } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        // User cancelled the picker, exit any dialogs or menus and move on
-      } else {
+      if (!DocumentPicker.isCancel(err)) {
         this.setState({
           showAlert: true,
           messageAlert: 'Ops...',
@@ -128,7 +126,9 @@ class Activity extends Component {
           'Cadastro realizado',
           'A atividade foi cadastrada com sucesso!',
         )
+
         this.props.userActions.setUser(response)
+
         this.props.navigation.navigate('Home')
       } catch (error) {
         this.setState({
@@ -229,6 +229,7 @@ class Activity extends Component {
 
           <Form>
             <Label>Categoria *</Label>
+
             <ContainerSelect>
               <SelectInput
                 options={listCategories}
@@ -243,7 +244,8 @@ class Activity extends Component {
               </SelectInput>
             </ContainerSelect>
 
-            <Label>Atividade da Categoria *</Label>
+            <Label>Atividade *</Label>
+
             <ContainerSelect>
               <SelectInput
                 options={listActivities}
@@ -260,17 +262,20 @@ class Activity extends Component {
             </ContainerSelect>
 
             <Label>Descrição *</Label>
+
             <TextInput
               onChangeText={text => this.setState({ description: text })}
             />
 
             <Label>Quantidade de Horas *</Label>
+
             <NumberInput
               value={hours}
               onChangeText={text => this.setState({ hours: text })}
             />
 
             <Label>Anexo </Label>
+
             <FileInput onPress={() => this.handleUploadFile()}>
               <TextFileInput>{fillAttachment}</TextFileInput>
             </FileInput>
