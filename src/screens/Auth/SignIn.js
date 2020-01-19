@@ -49,7 +49,11 @@ class SignIn extends Component {
         this.props.setUser(user)
         await AsyncStorage.setItem('token', `${token}`)
 
-        this.props.navigation.navigate('Home')
+        if (user.data.attributes.matricula) {
+          this.props.navigation.navigate('Home')
+        } else {
+          this.props.navigation.navigate('Create')
+        }
       } catch (err) {
         this.setState({
           showAlert: true,

@@ -24,6 +24,7 @@ import {
 
 class Home extends Component {
   state = {
+    _isMounted: false,
     percentual: 0,
     showAlert: true,
     messageAlert: 'Carregando...',
@@ -34,8 +35,19 @@ class Home extends Component {
   }
 
   componentDidMount() {
-    this.alert()
-    this.loadCategory()
+    if (this.checkUser()) {
+      this.alert()
+      this.loadCategory()
+    }
+  }
+
+  checkUser = () => {
+    const { matricula } = this.props.user.user.data.attributes
+    if (!matricula) {
+      this.props.navigation.navigate('Create')
+      return false
+    }
+    return true
   }
 
   loadCategory = async () => {
@@ -153,6 +165,7 @@ class Home extends Component {
 
 const mapStateToProps = state => ({
   alert: state.alert,
+  user: state.user,
 })
 
 const mapDispatchToProps = dispatch => {
@@ -165,6 +178,7 @@ const mapDispatchToProps = dispatch => {
 export default connect(mapStateToProps, mapDispatchToProps)(Home)
 
 Home.propTypes = {
+  user: PropTypes.object,
   alert: PropTypes.object.isRequired,
   alertActions: PropTypes.object.isRequired,
   categoryActions: PropTypes.object.isRequired,
