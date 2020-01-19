@@ -234,7 +234,6 @@ const mapDispatchToProps = dispatch => {
 export default connect(null, mapDispatchToProps)(Create)
 
 Create.propTypes = {
-  user: PropTypes.object.isRequired,
   userActions: PropTypes.object.isRequired,
   alertActions: PropTypes.object.isRequired,
   navigation: PropTypes.object.isRequired,
