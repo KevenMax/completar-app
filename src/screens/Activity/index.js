@@ -243,7 +243,7 @@ class Activity extends Component {
               </SelectInput>
             </ContainerSelect>
 
-            <Label>Atividade da Categoria *</Label>
+            <Label>Atividade *</Label>
             <ContainerSelect>
               <SelectInput
                 options={listActivities}
