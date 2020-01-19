@@ -70,9 +70,7 @@ class Create extends Component {
       })
       this.setState({ fillImage: res.name, image: res })
     } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        // User cancelled the picker, exit any dialogs or menus and move on
-      } else {
+      if (!DocumentPicker.isCancel(err)) {
         this.setState({
           showAlert: true,
           messageAlert: 'Ops...',
@@ -111,16 +109,19 @@ class Create extends Component {
       data.append('contato', contact)
       data.append('foto', image)
       data.append('curso_id', course)
+
       try {
         const request = await api.put('usuarios/update', data)
         const user = request.data
 
         this.props.userActions.setUser(user)
+
         this.props.alertActions.addAlert(
           true,
           'Perfil criado',
           'Seu perfil foi criado com sucesso!',
         )
+
         this.props.navigation.navigate('Home')
       } catch (err) {
         this.setState({
